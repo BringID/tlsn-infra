@@ -10,3 +10,13 @@ dev:
 		-v ./eckey.dev.pem:/root/.notary/eckey.pem \
 		ghcr.io/tlsnotary/tlsn/notary-server:v0.1.0-alpha.11 \
 		--config /root/.notary/config.yaml
+
+run:
+	docker run \
+		--init \
+		-p 127.0.0.1:7047:7047 \
+		-v ./config.yaml:/root/.notary/config.yaml \
+		-v ./whitelist.csv:/root/.notary/whitelist.csv \
+		-v ./eckey.pem:/root/.notary/eckey.pem \
+		ghcr.io/tlsnotary/tlsn/notary-server:v0.1.0-alpha.11 \
+		--config /root/.notary/config.yaml

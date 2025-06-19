@@ -38,5 +38,5 @@ log:
   filter: null
   format: COMPACT
 auth:
-  enabled: false
+  enabled: true
   whitelist: /root/.notary/whitelist.csv # Path inside the container
