@@ -8,7 +8,8 @@ use dotenv::from_filename;
 #[derive(Clone)]
 pub struct Config {
     pub notary_key: VerifyingKey,
-    pub private_key: SecretKey
+    pub private_key: SecretKey,
+    pub port: String,
 }
 
 static CONFIG: OnceLock<Config> = OnceLock::new();
@@ -42,9 +43,10 @@ pub fn get() -> &'static Config {
             .as_slice()
     ).expect("Invalid private key");
     
-
-
+    let port = env::var("PORT").expect("PORT is not set");
+    
     CONFIG.get_or_init(|| Config {
+        port,
         notary_key: VerifyingKey {
             alg,
             data,
