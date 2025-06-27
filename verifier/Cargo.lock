@@ -4479,7 +4479,7 @@ dependencies = [
 [[package]]
 name = "tlsn-cipher"
 version = "0.1.0-alpha.12"
-source = "git+ssh://git@github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
+source = "git+https://github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
 dependencies = [
  "aes 0.8.4",
  "async-trait",
@@ -4492,7 +4492,7 @@ dependencies = [
 [[package]]
 name = "tlsn-common"
 version = "0.1.0-alpha.12"
-source = "git+ssh://git@github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
+source = "git+https://github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
 dependencies = [
  "async-trait",
  "derive_builder 0.12.0",
@@ -4524,7 +4524,7 @@ dependencies = [
 [[package]]
 name = "tlsn-core"
 version = "0.1.0-alpha.12"
-source = "git+ssh://git@github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
+source = "git+https://github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
 dependencies = [
  "bcs",
  "bimap",
@@ -4551,7 +4551,7 @@ dependencies = [
 [[package]]
 name = "tlsn-deap"
 version = "0.1.0-alpha.12"
-source = "git+ssh://git@github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
+source = "git+https://github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
 dependencies = [
  "async-trait",
  "futures",
@@ -4568,7 +4568,7 @@ dependencies = [
 [[package]]
 name = "tlsn-hmac-sha256"
 version = "0.1.0-alpha.12"
-source = "git+ssh://git@github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
+source = "git+https://github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
 dependencies = [
  "mpz-circuits",
  "mpz-core",
@@ -4582,7 +4582,7 @@ dependencies = [
 [[package]]
 name = "tlsn-key-exchange"
 version = "0.1.0-alpha.12"
-source = "git+ssh://git@github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
+source = "git+https://github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
 dependencies = [
  "async-trait",
  "derive_builder 0.12.0",
@@ -4605,7 +4605,7 @@ dependencies = [
 [[package]]
 name = "tlsn-mpc-tls"
 version = "0.1.0-alpha.12"
-source = "git+ssh://git@github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
+source = "git+https://github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
 dependencies = [
  "aes 0.8.4",
  "aes-gcm",
@@ -4645,7 +4645,7 @@ dependencies = [
 [[package]]
 name = "tlsn-tls-backend"
 version = "0.1.0-alpha.12"
-source = "git+ssh://git@github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
+source = "git+https://github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
 dependencies = [
  "async-trait",
  "futures",
@@ -4656,7 +4656,7 @@ dependencies = [
 [[package]]
 name = "tlsn-tls-core"
 version = "0.1.0-alpha.12"
-source = "git+ssh://git@github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
+source = "git+https://github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
 dependencies = [
  "futures",
  "hmac",
@@ -4680,7 +4680,7 @@ source = "git+https://github.com/tlsnotary/tlsn-utils?rev=6168663#6168663495281f
 [[package]]
 name = "tlsn-verifier"
 version = "0.1.0-alpha.12"
-source = "git+ssh://git@github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
+source = "git+https://github.com/tlsnotary/tlsn.git#f2ff4ba79245ea641c485ce11efb2cb574292abb"
 dependencies = [
  "derive_builder 0.12.0",
  "futures",
