@@ -1,25 +1,15 @@
 use std::error::Error;
-use tlsn_core::attestation::{Attestation};
+use alloy::primitives::{keccak256, B256};
 use tlsn_core::presentation::{Presentation, PresentationOutput};
-use serde::{ Serialize, Deserialize };
 use tlsn_core::{CryptoProvider};
-use crate::{config, signer};
+use crate::{config};
+use crate::services::VerificationManager;
 
-#[derive(Deserialize)]
-pub struct VerifyRequest {
-    proof: Vec<u8>,
-    attestation: Attestation,
-}
-
-#[derive(Serialize)]
-pub struct VerificationResponse {
-    hash: String,
-    signature: String
-}
-
+// Returns user_id_hash
 pub fn verify_proof(
     presentation: Presentation,
-) -> Result<VerificationResponse, Box<dyn Error>> {
+    verification_id: &String,
+) -> Result<B256, Box<dyn Error>> {
     let PresentationOutput {
         attestation,
         server_name,
@@ -33,22 +23,34 @@ pub fn verify_proof(
     let server_name = server_name.ok_or("Server name is not set")?;
     let transcript = transcript.ok_or("Transcript is not provided")?;
 
-    transcript.received_authed()
+    let transcript_authed: Vec<String> = transcript.received_authed()
         .iter_ranges()
-        .for_each(|x| {
-            println!("\nIdx:\t{:?}", x);
-            let data = &transcript.received_unsafe()[x.clone()];
-            println!("Data:\t{:?}", data);
-            // std::str::from_utf8(data);
-            if let Ok(text) = std::str::from_utf8(data) {
-                println!("Text:\t\"{}\"", text);
-            } else {
-                println!("Text:\t<invalid>");
-            }
-        });
+        .filter_map(|range| {
+            let data = &transcript.received_unsafe()[range.clone()];
+            std::str::from_utf8(data)
+                .ok()
+                .map(|s| s.to_string())
+        })
+        .collect();
 
-    Ok(VerificationResponse {
-        hash: "1234567890".to_string(),
-        signature: "1234567890".to_string(),
-    })
+    let verification = VerificationManager::get(&verification_id)
+        .ok_or("Verification is not found")?
+        .clone();
+
+    // TODO stopped here
+    let user_id_hash = keccak256(
+        transcript_authed.get(verification.user_id.window.id)
+            .ok_or("User ID is not found")?
+    );
+
+    let success = verification.check(
+        server_name.to_string(),
+        &transcript_authed
+    );
+
+    if success {
+        Ok(user_id_hash)
+    } else {
+        Err("Verification failed".into())
+    }
 }

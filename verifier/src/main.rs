@@ -1,7 +1,8 @@
 mod tlsn;
 mod config;
 mod signer;
-mod server;
+mod core;
+mod services;
 
 use bincode;
 use std::error::Error;
@@ -9,5 +10,6 @@ use std::error::Error;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     config::init();
-    server::worker::run().await
+    services::VerificationManager::from_file("verifications.json")?;
+    services::Server::run().await
 }

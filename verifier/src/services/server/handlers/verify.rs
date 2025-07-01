@@ -1,13 +1,13 @@
 use std::str::FromStr;
 use alloy::signers::Signer;
 use alloy::{sol};
-use alloy::primitives::{Address, aliases::U256, aliases::B256, hex, keccak256};
+use alloy::primitives::{Address, aliases::U256, hex, keccak256};
 use alloy::sol_types::{SolStruct, SolValue};
 use axum::{Json, http::StatusCode};
 use rand::RngCore;
 use serde::{Serialize, Deserialize};
 use crate::signer;
-use crate::tlsn::verify_proof;
+use crate::tlsn;
 
 fn serialize_u256_as_string<S>(value: &U256, serializer: S) -> Result<S::Ok, S::Error>
 where
@@ -52,30 +52,35 @@ pub async fn handle(
     Json(payload): Json<VerifyRequest>,
 ) -> Result<Json<VerifyResponse>, StatusCode> {
 
-    // TODO Verify first to get idHash
+    // TODO Verify first to get id_hash
     let presentation = hex::decode(payload.tlsn_presentation.as_str())
         .map_err(|_| StatusCode::BAD_REQUEST)?;
 
-    verify_proof(bincode::deserialize(&presentation).map_err(|_| StatusCode::BAD_REQUEST)?)
-        .map_err(|_| StatusCode::BAD_REQUEST)?;
+    let presentation = bincode::deserialize(&presentation)
+        .map_err(|e| {
+            println!("Error: {}", e);
+            StatusCode::BAD_REQUEST
+        })?;
 
-    let registry = Address::from_str(payload.registry.as_str())
+    let id_hash = tlsn::verify_proof(presentation, &payload.verification_id)
         .map_err(|_| StatusCode::BAD_REQUEST)?;
 
     let verification_id = U256::from_str(payload.verification_id.as_str())
         .map_err(|_| StatusCode::BAD_REQUEST)?;
 
+    let registry = Address::from_str(payload.registry.as_str())
+        .map_err(|_| StatusCode::BAD_REQUEST)?;
+    
     let semaphore_identity_commitment = U256::from_str(
         payload.semaphore_identity_commitment.as_str()
     ).map_err(|_| StatusCode::BAD_REQUEST)?;
 
-    let mut verifier_message = TLSNVerifierMessage {
+    let verifier_message = TLSNVerifierMessage {
         registry,
         verificationId: verification_id,
         semaphoreIdentityCommitment: semaphore_identity_commitment,
-        idHash: Default::default(),
+        idHash: id_hash,
     };
-    rand::rng().fill_bytes(&mut verifier_message.idHash.0); // TODO get idHash from Presentation 
 
     let message = keccak256(verifier_message.abi_encode());
 
