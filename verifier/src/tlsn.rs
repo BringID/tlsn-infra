@@ -37,10 +37,15 @@ pub fn verify_proof(
         .ok_or("Verification is not found")?
         .clone();
 
-    // TODO stopped here
     let user_id_hash = keccak256(
         transcript_authed.get(verification.user_id.window.id)
             .ok_or("User ID is not found")?
+            .split(":")
+            .nth(1)
+            .ok_or("User ID is not found")?
+            .trim()
+            .trim_matches('"')
+            .as_bytes()
     );
 
     let success = verification.check(
