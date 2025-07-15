@@ -17,10 +17,7 @@ pub fn verify_proof(
         transcript,
         ..
     } = presentation.verify(&CryptoProvider::default())?;
-
-    if attestation.body.verifying_key() != &config::get().notary_key {
-        return Err("Invalid Notary key".into());
-    }
+    
     let server_name = server_name.ok_or("Server name is not set")?;
     let transcript = transcript.ok_or("Transcript is not provided")?;
 
@@ -48,6 +45,9 @@ pub fn verify_proof(
             };
         }
         _ => {
+            if attestation.body.verifying_key() != &config::get().notary_key {
+                return Err("Invalid Notary key".into());
+            }
             user_id_hash = keccak256(
                 transcript_authed.get(verification.user_id.window.id)
                     .ok_or("User ID is not found")?

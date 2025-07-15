@@ -13,9 +13,32 @@
       {
         "window": {
           "id": 1,
+          "check_key": true,
           "key": "screen_name"
         },
         "type": "any"
+      }
+    ]
+  },
+  "2": {
+    "id": "2",
+    "host": "www.uber.com",
+    "user_id": {
+      "window": {
+        "id": 0,
+        "key": "-"
+      },
+      "type": "any"
+    },
+    "checks": [
+      {
+        "window": {
+          "id": 1,
+          "check_key": false,
+          "key": "-"
+        },
+        "type": "contains",
+        "value": "\"status\":\"success\""
       }
     ]
   }

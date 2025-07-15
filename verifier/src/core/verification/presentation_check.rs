@@ -1,4 +1,3 @@
-use std::fmt::format;
 use serde::{Deserialize, Serialize};
 use super::check::{Check, CheckableValue};
 use super::window::Window;
@@ -20,20 +19,23 @@ impl PresentationCheck {
     }
 
     pub fn check(&self, transcript: &str) -> bool {
-        if !transcript.starts_with(&format!("\"{}\"", self.window.key)) {
-            return false;
-        }
-        let Some(value) = transcript
-            .split(':')
-            .nth(1)
-            .map(|s| s.trim_matches('"'))
-        else {
-            return false;
-        };
-
-        match value.parse::<i64>() {
-            Ok(num) => self.check_value(num),
-            Err(_) => self.check_value(value),
+        if self.window.key != "-" {
+            if !transcript.starts_with(&format!("\"{}\"", self.window.key)) {
+                return false;
+            }
+            let Some(value) = transcript
+                .split(':')
+                .nth(1)
+                .map(|s| s.trim_matches('"'))
+            else {
+                return false;
+            };
+            match value.parse::<i64>() {
+                Ok(num) => self.check_value(num),
+                Err(_) => self.check_value(value),
+            }
+        } else {
+            self.check_value(transcript)
         }
     }
 

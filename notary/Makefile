@@ -8,7 +8,7 @@ dev:
 		-v ./config.yaml:/root/.notary/config.yaml \
 		-v ./whitelist.dev.csv:/root/.notary/whitelist.csv \
 		-v ./eckey.dev.pem:/root/.notary/eckey.pem \
-		ghcr.io/tlsnotary/tlsn/notary-server:v0.1.0-alpha.11 \
+		ghcr.io/tlsnotary/tlsn/notary-server:v0.1.0-alpha.12 \
 		--config /root/.notary/config.yaml
 
 run:
@@ -18,5 +18,5 @@ run:
 		-v ./config.yaml:/root/.notary/config.yaml \
 		-v ./whitelist.csv:/root/.notary/whitelist.csv \
 		-v ./eckey.pem:/root/.notary/eckey.pem \
-		ghcr.io/tlsnotary/tlsn/notary-server:v0.1.0-alpha.11 \
+		ghcr.io/tlsnotary/tlsn/notary-server:v0.1.0-alpha.12 \
 		--config /root/.notary/config.yaml
