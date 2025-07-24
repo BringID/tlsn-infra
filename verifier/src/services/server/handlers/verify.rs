@@ -4,7 +4,6 @@ use alloy::{sol};
 use alloy::primitives::{Address, aliases::U256, hex, keccak256};
 use alloy::sol_types::{SolStruct, SolValue};
 use axum::{Json, http::StatusCode};
-use rand::RngCore;
 use serde::{Serialize, Deserialize};
 use crate::signer;
 use crate::tlsn;
@@ -22,9 +21,9 @@ sol! {
     #[derive(Serialize)]
     struct TLSNVerifierMessage {
         address registry;
-        #[serde(rename = "verification_id")]
+        #[serde(rename = "credential_group_id")]
         #[serde(serialize_with = "serialize_u256_as_string")]
-        uint256 verificationId;
+        uint256 credentialGroupId;
         #[serde(rename = "id_hash")]
         bytes32 idHash;
         #[serde(rename = "semaphore_identity_commitment")]
@@ -37,7 +36,7 @@ sol! {
 pub struct VerifyRequest {
     tlsn_presentation: String,
     registry: String,
-    verification_id: String,
+    credential_group_id: String,
     semaphore_identity_commitment: String
 }
 
@@ -62,10 +61,10 @@ pub async fn handle(
             StatusCode::BAD_REQUEST
         })?;
 
-    let id_hash = tlsn::verify_proof(presentation, &payload.verification_id)
+    let id_hash = tlsn::verify_proof(presentation, &payload.credential_group_id)
         .map_err(|_| StatusCode::BAD_REQUEST)?;
 
-    let verification_id = U256::from_str(payload.verification_id.as_str())
+    let credential_group_id = U256::from_str(payload.credential_group_id.as_str())
         .map_err(|_| StatusCode::BAD_REQUEST)?;
 
     let registry = Address::from_str(payload.registry.as_str())
@@ -77,7 +76,7 @@ pub async fn handle(
 
     let verifier_message = TLSNVerifierMessage {
         registry,
-        verificationId: verification_id,
+        credentialGroupId: credential_group_id,
         semaphoreIdentityCommitment: semaphore_identity_commitment,
         idHash: id_hash,
     };

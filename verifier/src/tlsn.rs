@@ -9,7 +9,7 @@ use rand::{rng, RngCore};
 // Returns user_id_hash
 pub fn verify_proof(
     presentation: Presentation,
-    verification_id: &String,
+    credential_group_id: &String,
 ) -> Result<B256, Box<dyn Error>> {
     let PresentationOutput {
         attestation,
@@ -31,7 +31,19 @@ pub fn verify_proof(
         })
         .collect();
 
-    let verification = VerificationManager::get(&verification_id)
+    transcript.received_authed().iter_ranges()
+        .for_each(|x| {
+            println!("\nIdx:\t{:?}", x);
+            let data = &transcript.received_unsafe()[x.clone()];
+            println!("Data:\t{:?}", data);
+            if let Ok(text) = std::str::from_utf8(data) {
+                println!("Text:\t\"{}\"", text);
+            } else {
+                println!("Text:\t<invalid>");
+            }
+        });
+
+    let verification = VerificationManager::get(&credential_group_id)
         .ok_or("Verification is not found")?
         .clone();
 
