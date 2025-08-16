@@ -1,6 +1,10 @@
 build:
 	docker build -t notary-service .
 
+release:
+	docker build -t ghcr.io/bringid/tlsn/notary:latest .
+	docker push ghcr.io/bringid/tlsn/notary:latest
+
 setup:
 	openssl genpkey -algorithm EC -out eckey.pem -pkeyopt ec_paramgen_curve:secp256k1 -pkeyopt ec_param_enc:named_curve
 

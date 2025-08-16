@@ -4,11 +4,13 @@ WORKDIR /root
 
 COPY requirements.txt requirements.txt
 COPY config /app/websockify_config
+COPY start.sh /app/start.sh
 
+RUN chmod +x /app/start.sh
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Standard ports
 EXPOSE 443
 EXPOSE 80
 
-CMD ["python", "-m", "websockify", "80", "--target-config", "/app/websockify_config"]
+CMD ["/app/start.sh"]

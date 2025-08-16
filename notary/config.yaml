@@ -12,7 +12,7 @@ html_info: |
       <path d="M21.2903 25.7246V76.7012H12.7742V34.2207H0V25.7246H21.2903Z" fill="#243F5F"/>
       <path d="M63.871 76.7012H72.3871V34.2207H76.6452V76.7012H85.1613V25.7246H63.871V76.7012Z" fill="#243F5F"/>
       <path d="M38.3226 25.7246H59.6129V34.2207H46.8387V46.9649H59.6129V76.7012H38.3226V68.2051H51.0968V55.4609H38.3226V25.7246Z" fill="#243F5F"/>
-    </svg>
+    </svg>O
     <h1>Notary Server {version}!</h1>
     <ul>
       <li>public key: <pre>{public_key}</pre></li>
@@ -23,8 +23,8 @@ html_info: |
   </body>
 concurrency: 32
 notarization:
-  max_sent_data: 100000
-  max_recv_data: 100000
+  max_sent_data: 500000
+  max_recv_data: 500000
   timeout: 1800
   private_key_path: "/root/.notary/eckey.pem" # Path inside the container
   signature_algorithm: secp256k1

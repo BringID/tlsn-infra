@@ -9,7 +9,6 @@ RUN openssl genpkey -algorithm EC -out eckey.pem -pkeyopt ec_paramgen_curve:secp
 FROM ghcr.io/tlsnotary/tlsn/notary-server:v0.1.0-alpha.12
 
 COPY --from=key-generator /keys/eckey.pem /root/.notary/eckey.pem
-
 COPY config.yaml /root/.notary/config.yaml
 
 EXPOSE 7047
