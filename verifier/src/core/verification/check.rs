@@ -1,9 +1,11 @@
 use serde::{Deserialize, Serialize};
+use serde_json::{Value};
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(tag = "type", content = "value")]
 #[serde(rename_all = "snake_case")]
 pub enum Check {
+    LenGte(usize),
     Gte(i64),
     Lte(i64),
     Eq(i64),
@@ -34,6 +36,15 @@ impl CheckableValue for &str {
             Check::Contains(value) => {
                 self.contains(value)
             },
+            _ => false,
+        }
+    }
+}
+
+impl CheckableValue for &Vec<Value> {
+    fn check_against(&self, check: &Check) -> bool {
+        match check {
+            Check::LenGte(value) => self.len() >= *value,
             _ => false,
         }
     }

@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::{Value};
 use super::check::{Check, CheckableValue};
 use super::window::Window;
 
@@ -20,16 +21,25 @@ impl PresentationCheck {
 
     pub fn check(&self, transcript: &str) -> bool {
         if self.window.key != "-" {
-            if !transcript.starts_with(&format!("\"{}\"", self.window.key)) {
+            if !transcript.trim_matches(' ').starts_with(&format!("\"{}\"", self.window.key)) {
                 return false;
             }
             let Some(value) = transcript
-                .split(':')
-                .nth(1)
-                .map(|s| s.trim_matches('"'))
+                .split_once(':')
+                .map(|(key, val)| val.trim_matches('"'))
             else {
                 return false;
             };
+
+            // Trying to parse JSON array
+            println!("Checking value: {}", value);
+            if let Ok(json_value) = serde_json::from_str::<Value>(value) {
+                if let Some(array) = json_value.as_array() {
+                    return self.check_value(array);
+                }
+            }
+
+            // Trying to parse i64, if error - process &str
             match value.parse::<i64>() {
                 Ok(num) => self.check_value(num),
                 Err(_) => self.check_value(value),

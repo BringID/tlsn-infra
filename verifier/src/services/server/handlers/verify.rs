@@ -49,30 +49,27 @@ pub struct VerifyResponse {
 
 pub async fn handle(
     Json(payload): Json<VerifyRequest>,
-) -> Result<Json<VerifyResponse>, StatusCode> {
+) -> Result<Json<VerifyResponse>, (StatusCode, String)> {
 
     // TODO Verify first to get id_hash
     let presentation = hex::decode(payload.tlsn_presentation.as_str())
-        .map_err(|_| StatusCode::BAD_REQUEST)?;
+        .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
 
     let presentation = bincode::deserialize(&presentation)
-        .map_err(|e| {
-            println!("Error: {}", e);
-            StatusCode::BAD_REQUEST
-        })?;
+        .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
 
     let id_hash = tlsn::verify_proof(presentation, &payload.credential_group_id)
-        .map_err(|_| StatusCode::BAD_REQUEST)?;
+        .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
 
     let credential_group_id = U256::from_str(payload.credential_group_id.as_str())
-        .map_err(|_| StatusCode::BAD_REQUEST)?;
+        .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
 
     let registry = Address::from_str(payload.registry.as_str())
-        .map_err(|_| StatusCode::BAD_REQUEST)?;
+        .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
     
     let semaphore_identity_commitment = U256::from_str(
         payload.semaphore_identity_commitment.as_str()
-    ).map_err(|_| StatusCode::BAD_REQUEST)?;
+    ).map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
 
     let verifier_message = TLSNVerifierMessage {
         registry,
@@ -85,7 +82,7 @@ pub async fn handle(
 
     let signature = signer::get().sign_message(message.as_slice())
         .await
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+        .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
 
     Ok(
         Json(VerifyResponse{

@@ -1,11 +1,11 @@
 {
   "1": {
     "id": "1",
-    "host": "api.x.com",
+    "host": "riders.uber.com",
     "user_id": {
       "window": {
-        "id": 1,
-        "key": "screen_name"
+        "id": 0,
+        "key": "uuid"
       },
       "type": "any"
     },
@@ -14,31 +14,97 @@
         "window": {
           "id": 1,
           "check_key": true,
-          "key": "screen_name"
+          "key": "activities"
         },
-        "type": "any"
+        "type": "len_gte",
+        "value": 1
       }
     ]
   },
   "2": {
     "id": "2",
-    "host": "www.uber.com",
+    "host": "x.com",
     "user_id": {
       "window": {
-        "id": 0,
-        "key": "-"
+        "id": 1,
+        "key": "id"
       },
       "type": "any"
     },
     "checks": [
       {
         "window": {
-          "id": 1,
-          "check_key": false,
-          "key": "-"
+          "id": 0,
+          "check_key": true,
+          "key": "verified_follower_count"
         },
-        "type": "contains",
-        "value": "\"status\":\"success\""
+        "type": "gte",
+        "value": 10
+      }
+    ]
+  },
+  "3": {
+    "id": "3",
+    "host": "x.com",
+    "user_id": {
+      "window": {
+        "id": 1,
+        "key": "id"
+      },
+      "type": "any"
+    },
+    "checks": [
+      {
+        "window": {
+          "id": 0,
+          "check_key": true,
+          "key": "verified_follower_count"
+        },
+        "type": "gte",
+        "value": 20
+      }
+    ]
+  },
+  "4": {
+    "id": "4",
+    "host": "x.com",
+    "user_id": {
+      "window": {
+        "id": 1,
+        "key": "id"
+      },
+      "type": "any"
+    },
+    "checks": [
+      {
+        "window": {
+          "id": 0,
+          "check_key": true,
+          "key": "verified_follower_count"
+        },
+        "type": "gte",
+        "value": 100
+      }
+    ]
+  },
+  "5": {
+    "id": "5",
+    "host": "account.apple.com",
+    "user_id": {
+      "window": {
+        "id": 0,
+        "key": "id"
+      },
+      "type": "any"
+    },
+    "checks": [
+      {
+        "window": {
+          "id": 0,
+          "check_key": true,
+          "key": "id"
+        },
+        "type": "any"
       }
     ]
   }

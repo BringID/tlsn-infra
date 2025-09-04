@@ -24,7 +24,7 @@ pub fn verify_proof(
     let transcript_authed: Vec<String> = transcript.received_authed()
         .iter_ranges()
         .filter_map(|range| {
-            let data = &transcript.received_unsafe()[range.clone()];
+            let data = &transcript.received_unsafe()[range];
             std::str::from_utf8(data)
                 .ok()
                 .map(|s| s.to_string())
@@ -34,10 +34,9 @@ pub fn verify_proof(
     transcript.received_authed().iter_ranges()
         .for_each(|x| {
             println!("\nIdx:\t{:?}", x);
-            let data = &transcript.received_unsafe()[x.clone()];
-            println!("Data:\t{:?}", data);
+            let data = &transcript.received_unsafe()[x];
             if let Ok(text) = std::str::from_utf8(data) {
-                println!("Text:\t\"{}\"", text);
+                println!("Text:\t{}", text);
             } else {
                 println!("Text:\t<invalid>");
             }
@@ -73,14 +72,9 @@ pub fn verify_proof(
         }
     }
 
-    let success = verification.check(
+    verification.check(
         server_name.to_string(),
         &transcript_authed
-    );
-
-    if success {
-        Ok(user_id_hash)
-    } else {
-        Err("Verification failed".into())
-    }
+    )?;
+    Ok(user_id_hash)
 }
