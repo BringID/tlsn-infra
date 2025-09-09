@@ -1,4 +1,25 @@
 {
+  "99": {
+    "id": "99",
+    "host": "api.x.com",
+    "user_id": {
+      "window": {
+        "id": 1,
+        "key": "screen_name"
+      },
+      "type": "any"
+    },
+    "checks": [
+      {
+        "window": {
+          "id": 1,
+          "check_key": true,
+          "key": "screen_name"
+        },
+        "type": "any"
+      }
+    ]
+  },
   "1": {
     "id": "1",
     "host": "riders.uber.com",
