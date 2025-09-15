@@ -1,4 +1,5 @@
 use std::error::Error;
+use alloy::hex::ToHexExt;
 use alloy::primitives::{B256};
 use tlsn_core::presentation::{Presentation, PresentationOutput};
 use tlsn_core::{CryptoProvider};
@@ -49,7 +50,12 @@ pub async fn verify_proof(
 
     let uh = user_id_hash(&transcript_authed, &verification.user_id).await?;
     if attestation.body.verifying_key() != &config::get().notary_key {
-        return Err("Invalid Notary key".into());
+        return Err(
+            format!("Invalid Notary Key.\n\nExpected: {}\n\nGot: {}",
+                    &config::get().notary_key.data.encode_hex_with_prefix(),
+                    attestation.body.verifying_key().data.encode_hex_with_prefix()
+            ).into()
+        );
     }
 
     verification.check(
