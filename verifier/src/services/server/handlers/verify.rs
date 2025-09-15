@@ -51,10 +51,8 @@ pub async fn handle(
     Json(payload): Json<VerifyRequest>,
 ) -> Result<Json<VerifyResponse>, (StatusCode, String)> {
 
-    // TODO Verify first to get id_hash
     let presentation = hex::decode(payload.tlsn_presentation.as_str())
         .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
-
     let presentation = bincode::deserialize(&presentation)
         .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
 

@@ -36,6 +36,7 @@ pub fn verify_proof(
             println!("\nIdx:\t{:?}", x);
             let data = &transcript.received_unsafe()[x];
             if let Ok(text) = std::str::from_utf8(data) {
+                println!("Text Len:\t{}", text.len());
                 println!("Text:\t{}", text);
             } else {
                 println!("Text:\t<invalid>");
