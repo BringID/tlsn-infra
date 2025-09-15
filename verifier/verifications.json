@@ -20,8 +20,8 @@
       }
     ]
   },
-  "3": {
-    "id": "3",
+  "1": {
+    "id": "1",
     "host": "riders.uber.com",
     "user_id": {
       "window": {
@@ -39,6 +39,50 @@
         },
         "type": "len_gte",
         "value": 1
+      }
+    ]
+  },
+  "2": {
+    "id": "2",
+    "host": "x.com",
+    "user_id": {
+      "window": {
+        "id": 1,
+        "key": "id"
+      },
+      "type": "any"
+    },
+    "checks": [
+      {
+        "window": {
+          "id": 0,
+          "check_key": true,
+          "key": "verified_follower_count"
+        },
+        "type": "gte",
+        "value": 1000
+      }
+    ]
+  },
+  "3": {
+    "id": "3",
+    "host": "x.com",
+    "user_id": {
+      "window": {
+        "id": 1,
+        "key": "id"
+      },
+      "type": "any"
+    },
+    "checks": [
+      {
+        "window": {
+          "id": 0,
+          "check_key": true,
+          "key": "verified_follower_count"
+        },
+        "type": "gte",
+        "value": 100
       }
     ]
   },
@@ -60,63 +104,20 @@
           "key": "verified_follower_count"
         },
         "type": "gte",
-        "value": 1000
+        "value": 10
       }
     ]
   },
   "5": {
     "id": "5",
-    "host": "x.com",
-    "user_id": {
-      "window": {
-        "id": 1,
-        "key": "id"
-      },
-      "type": "any"
-    },
-    "checks": [
-      {
-        "window": {
-          "id": 0,
-          "check_key": true,
-          "key": "verified_follower_count"
-        },
-        "type": "gte",
-        "value": 100
-      }
-    ]
-  },
-  "6": {
-    "id": "6",
-    "host": "x.com",
-    "user_id": {
-      "window": {
-        "id": 1,
-        "key": "id"
-      },
-      "type": "any"
-    },
-    "checks": [
-      {
-        "window": {
-          "id": 0,
-          "check_key": true,
-          "key": "verified_follower_count"
-        },
-        "type": "gte",
-        "value": 10
-      }
-    ]
-  },
-  "7": {
-    "id": "7",
     "host": "account.apple.com",
     "user_id": {
       "window": {
         "id": 0,
         "key": "-"
       },
-      "type": "any"
+      "type": "any",
+      "custom_handler": "apple_devices_user_id"
     },
     "checks": [
       {

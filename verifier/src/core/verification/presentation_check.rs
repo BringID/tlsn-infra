@@ -8,11 +8,14 @@ pub struct PresentationCheck {
     pub window: Window,
     #[serde(flatten)]
     pub check: Check,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub custom_handler: Option<String>,
+
 }
 
 impl PresentationCheck {
     pub fn new(window: Window, check: Check) -> Self {
-        Self { window, check }
+        Self { window, check, custom_handler: None }
     }
 
     pub fn from_json(json: &str) -> Result<Self, serde_json::Error> {

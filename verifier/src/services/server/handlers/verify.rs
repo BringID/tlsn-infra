@@ -56,7 +56,7 @@ pub async fn handle(
     let presentation = bincode::deserialize(&presentation)
         .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
 
-    let id_hash = tlsn::verify_proof(presentation, &payload.credential_group_id)
+    let id_hash = tlsn::verify_proof(presentation, &payload.credential_group_id).await
         .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
 
     let credential_group_id = U256::from_str(payload.credential_group_id.as_str())

@@ -3,6 +3,7 @@ use std::io::BufReader;
 use std::sync::{Arc, OnceLock, RwLock};
 use crate::core::Verification;
 use std::collections::HashMap;
+use crate::services::handlers_manager::HandlersManager;
 
 static VERIFICATIONS: OnceLock<RwLock<HashMap<String, Arc<Verification>>>> = OnceLock::new();
 
@@ -20,7 +21,7 @@ impl VerificationManager {
             .and_then(|map| map.read().ok()?.get(id).cloned())
     }
 
-    pub fn from_file(path: &str) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn from_file(path: &str) -> Result<(), Box<dyn std::error::Error>> {
         let file = File::open(path)?;
         let reader = BufReader::new(file);
 
@@ -37,7 +38,23 @@ impl VerificationManager {
             .set(RwLock::new(arc_verifications))
             .map_err(|_| "Already initialized")?;
 
+        let handlers = HandlersManager::get_handlers().read().await;
+
+        // Validating verifications
         for (_, verification) in VERIFICATIONS.get().unwrap().read().unwrap().iter() {
+            if let Some(user_id_handler) = &verification.user_id.custom_handler {
+                if handlers.get(user_id_handler).is_none() {
+                    return Err(format!("Handler {} is not found", user_id_handler).into());
+                }
+            }
+            for check in verification.checks.iter() {
+                if let Some(handler) = &check.custom_handler {
+                    println!("Handler: {}", handler);
+                    if handlers.get(handler).is_none() {
+                        return Err(format!("Handler {} is not found", handler).into());
+                    }
+                }
+            }
             dbg!(verification);
         }
         Ok(())

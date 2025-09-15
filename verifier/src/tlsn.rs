@@ -1,13 +1,13 @@
 use std::error::Error;
-use alloy::primitives::{keccak256, B256};
+use alloy::primitives::{B256};
 use tlsn_core::presentation::{Presentation, PresentationOutput};
 use tlsn_core::{CryptoProvider};
 use crate::{config};
 use crate::services::VerificationManager;
-use rand::{rng, RngCore};
+use crate::helpers::user_id_hash;
 
 // Returns user_id_hash
-pub fn verify_proof(
+pub async fn verify_proof(
     presentation: Presentation,
     credential_group_id: &String,
 ) -> Result<B256, Box<dyn Error>> {
@@ -47,35 +47,14 @@ pub fn verify_proof(
         .ok_or("Verification is not found")?
         .clone();
 
-    let user_id_hash: B256;
-    match std::env::var("ENV") {
-        Ok(env) if env == "dev"  => {
-            user_id_hash = {
-                let mut random_bytes = [0u8; 32];
-                rng().fill_bytes(&mut random_bytes);
-                B256::from(random_bytes)
-            };
-        }
-        _ => {
-            if attestation.body.verifying_key() != &config::get().notary_key {
-                return Err("Invalid Notary key".into());
-            }
-            user_id_hash = keccak256(
-                transcript_authed.get(verification.user_id.window.id)
-                    .ok_or("User ID is not found")?
-                    .split(":")
-                    .nth(1)
-                    .ok_or("User ID is not found")?
-                    .trim()
-                    .trim_matches('"')
-                    .as_bytes()
-            );
-        }
+    let uh = user_id_hash(&transcript_authed, &verification.user_id).await?;
+    if attestation.body.verifying_key() != &config::get().notary_key {
+        return Err("Invalid Notary key".into());
     }
 
     verification.check(
         server_name.to_string(),
         &transcript_authed
     )?;
-    Ok(user_id_hash)
+    Ok(uh)
 }
