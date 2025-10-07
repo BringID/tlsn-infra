@@ -1,4 +1,5 @@
 use std::error::Error;
+use alloy::hex;
 use alloy::primitives::{keccak256, B256};
 use rand::{rng, RngCore};
 use crate::core::PresentationCheck;
@@ -25,16 +26,19 @@ pub async fn user_id_hash(
                 }
                 Ok(user_id_hash.ok_or("This is a bug. User ID hash was not computed")?)
             } else {
-                Ok(keccak256(
-                    transcript_authed.get(check.window.id)
-                        .ok_or("User ID is not found")?
-                        .split(":")
-                        .nth(1)
-                        .ok_or("User ID is not found")?
-                        .trim()
-                        .trim_matches('"')
-                        .as_bytes()
-                ))
+                let id_bytes = transcript_authed.get(check.window.id)
+                    .ok_or("User ID is not found")?
+                    .split(":")
+                    .nth(1)
+                    .ok_or("User ID is not found")?
+                    .trim()
+                    .trim_matches('"')
+                    .as_bytes();
+                let salt_vec = hex::decode(std::env::var("SALT_HEX")?)?;
+                let mut buf = Vec::with_capacity(id_bytes.len() + salt_vec.len());
+                buf.extend_from_slice(id_bytes);
+                buf.extend_from_slice(salt_vec.as_slice());
+                Ok(keccak256(&buf))
             }
         }
     }
