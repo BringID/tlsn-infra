@@ -14,7 +14,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     config::init();
     services::HandlersManager::register(
         "apple_devices_user_id".to_string(),
-        custom_handlers::handler
+        custom_handlers::apple_devices_user_id
+    ).await?;
+    services::HandlersManager::register(
+        "uber_rides_amount".to_string(),
+        custom_handlers::uber_rides_amount
     ).await?;
 
     services::VerificationManager::from_file("verifications.json").await?;
