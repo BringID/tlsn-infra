@@ -7,9 +7,9 @@ use crate::core::{PresentationCheck};
 
 #[derive(Debug, Serialize, Deserialize)]
 struct DeviceData {
-    id: String,  // Знаем, что это поле обязательно есть
+    id: String,
     #[serde(flatten)]
-    extra: std::collections::HashMap<String, Value>,  // Для остальных полей
+    extra: std::collections::HashMap<String, Value>,
 }
 
 pub fn handler(_: &PresentationCheck, transcript: &String) -> Result<(bool, Option<B256>), Box<dyn Error>> {

@@ -61,6 +61,6 @@ pub async fn verify_proof(
     verification.check(
         server_name.to_string(),
         &transcript_authed
-    )?;
+    ).await?;
     Ok(uh)
 }

@@ -10,6 +10,7 @@ pub enum Check {
     Lte(i64),
     Eq(i64),
     Contains(String),
+    Custom,
     Any,
 }
 
@@ -23,7 +24,7 @@ impl CheckableValue for i64 {
             Check::Gte(threshold) => *self >= *threshold,
             Check::Lte(threshold) => *self <= *threshold,
             Check::Eq(threshold) => *self == *threshold,
-            Check::Any => true,
+            Check::Any | Check::Custom => true,
             _ => false,
         }
     }
@@ -32,7 +33,7 @@ impl CheckableValue for i64 {
 impl CheckableValue for &str {
     fn check_against(&self, check: &Check) -> bool {
         match check {
-            Check::Any => true,
+            Check::Any | Check::Custom => true,
             Check::Contains(value) => {
                 self.contains(value)
             },
@@ -45,6 +46,7 @@ impl CheckableValue for &Vec<Value> {
     fn check_against(&self, check: &Check) -> bool {
         match check {
             Check::LenGte(value) => self.len() >= *value,
+            Check::Any | Check::Custom => true,
             _ => false,
         }
     }

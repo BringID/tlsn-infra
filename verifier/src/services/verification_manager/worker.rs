@@ -25,10 +25,7 @@ impl VerificationManager {
         let file = File::open(path)?;
         let reader = BufReader::new(file);
 
-        // Читаем верификации из файла
         let raw_verifications: HashMap<String, Verification> = serde_json::from_reader(reader)?;
-
-        // Преобразуем в HashMap с Arc<Verification>
         let arc_verifications = raw_verifications
             .into_iter()
             .map(|(k, v)| (k, Arc::new(v)))
