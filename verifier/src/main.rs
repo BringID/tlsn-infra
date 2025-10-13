@@ -7,6 +7,7 @@ mod helpers;
 mod custom_handlers;
 mod telemetry;
 use std::error::Error;
+use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -22,5 +23,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     ).await?;
 
     services::VerificationManager::from_file("verifications.json").await?;
+
+    info!("service is running");
     services::Server::run().await
 }
