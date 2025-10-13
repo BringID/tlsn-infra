@@ -10,7 +10,7 @@ pub fn init_logging() {
     let filter = EnvFilter::try_from_default_env()
         .unwrap_or_else(|_| EnvFilter::new("info"));
 
-    let (writer, guard) = non_blocking(std::io::stderr());
+    let (writer, guard) = non_blocking(std::io::stdout());
     GUARD.set(guard).unwrap();
 
     tracing_subscriber::registry()
