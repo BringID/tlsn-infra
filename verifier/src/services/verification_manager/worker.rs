@@ -3,6 +3,7 @@ use std::io::BufReader;
 use std::sync::{Arc, OnceLock, RwLock};
 use crate::core::Verification;
 use std::collections::HashMap;
+use tracing::{debug, error, instrument};
 use crate::services::handlers_manager::HandlersManager;
 
 static VERIFICATIONS: OnceLock<RwLock<HashMap<String, Arc<Verification>>>> = OnceLock::new();
@@ -10,17 +11,17 @@ static VERIFICATIONS: OnceLock<RwLock<HashMap<String, Arc<Verification>>>> = Onc
 pub struct VerificationManager;
 
 impl VerificationManager {
-    // TODO implement HTTP autoupdate
-    pub fn autoupdate() -> Result<(), &'static str> {
-        Err("Not implemented")
-    }
-
     pub fn get(id: &str) -> Option<Arc<Verification>> {
         VERIFICATIONS
             .get()
             .and_then(|map| map.read().ok()?.get(id).cloned())
     }
 
+    #[instrument(
+        name="verification_manager_loader",
+        level="info",
+        err
+    )]
     pub async fn from_file(path: &str) -> Result<(), Box<dyn std::error::Error>> {
         let file = File::open(path)?;
         let reader = BufReader::new(file);
@@ -33,7 +34,10 @@ impl VerificationManager {
 
         VERIFICATIONS
             .set(RwLock::new(arc_verifications))
-            .map_err(|_| "Already initialized")?;
+            .map_err(|_| {
+                error!("already initialized");
+                "Already initialized"
+            })?;
 
         let handlers = HandlersManager::get_handlers().read().await;
 
@@ -41,32 +45,20 @@ impl VerificationManager {
         for (_, verification) in VERIFICATIONS.get().unwrap().read().unwrap().iter() {
             if let Some(user_id_handler) = &verification.user_id.custom_handler {
                 if handlers.get(user_id_handler).is_none() {
-                    return Err(format!("Handler {} is not found", user_id_handler).into());
+                    error!("handler {user_id_handler} is not found");
+                    return Err(format!("handler {} is not found", user_id_handler).into());
                 }
             }
             for check in verification.checks.iter() {
                 if let Some(handler) = &check.custom_handler {
-                    println!("Handler: {}", handler);
                     if handlers.get(handler).is_none() {
-                        return Err(format!("Handler {} is not found", handler).into());
+                        error!("handler {handler} is not found");
+                        return Err(format!("handler {} is not found", handler).into());
                     }
                 }
             }
-            dbg!(verification);
+            debug!("loaded {:?}", verification);
         }
         Ok(())
-    }
-
-    pub fn add(verification: Verification) -> Result<(), &'static str> {
-        let id = verification.id.clone();
-        let map = VERIFICATIONS.get().ok_or("Not initialized")?;
-
-        match map.write() {
-            Ok(mut write_guard) => {
-                write_guard.insert(id, Arc::new(verification));
-                Ok(())
-            },
-            Err(_) => Err("Failed to acquire write lock"),
-        }
     }
 }

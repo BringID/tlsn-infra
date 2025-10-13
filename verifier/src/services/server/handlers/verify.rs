@@ -2,11 +2,12 @@ use std::str::FromStr;
 use alloy::signers::Signer;
 use alloy::{sol};
 use alloy::primitives::{Address, aliases::U256, hex, keccak256};
-use alloy::sol_types::{SolStruct, SolValue};
+use alloy::sol_types::{SolValue};
 use axum::{Json, http::StatusCode};
 use serde::{Serialize, Deserialize};
 use crate::signer;
 use crate::tlsn;
+use tracing::{info, error, instrument, warn};
 
 fn serialize_u256_as_string<S>(value: &U256, serializer: S) -> Result<S::Ok, S::Error>
 where
@@ -47,27 +48,53 @@ pub struct VerifyResponse {
     signature: String,
 }
 
+#[instrument(
+    name="handler",
+    skip(payload),
+    fields(
+        group = %payload.credential_group_id,
+        commitment = %payload.semaphore_identity_commitment
+    )
+)]
 pub async fn handle(
     Json(payload): Json<VerifyRequest>,
 ) -> Result<Json<VerifyResponse>, (StatusCode, String)> {
-
+    info!("verification started");
     let presentation = hex::decode(payload.tlsn_presentation.as_str())
-        .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
+        .map_err(|e| {
+            error!("Presentation decoding failed: {e}");
+            (StatusCode::BAD_REQUEST, e.to_string())
+        })?;
     let presentation = bincode::deserialize(&presentation)
-        .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
+        .map_err(|e| {
+            error!("Presentation deserialization failed: {e}");
+            (StatusCode::BAD_REQUEST, e.to_string())
+        })?;
 
     let id_hash = tlsn::verify_proof(presentation, &payload.credential_group_id).await
-        .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
+        .map_err(|e| {
+            warn!("verification failed");
+            (StatusCode::BAD_REQUEST, e.to_string())
+        })?;
 
     let credential_group_id = U256::from_str(payload.credential_group_id.as_str())
-        .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
+        .map_err(|e| {
+            error!("wrong Credential Group provided {}: {e}", payload.credential_group_id);
+            (StatusCode::BAD_REQUEST, e.to_string())
+        })?;
 
     let registry = Address::from_str(payload.registry.as_str())
-        .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
+        .map_err(|e| {
+            error!("invalid Registry address {}: {e}", payload.registry);
+            (StatusCode::BAD_REQUEST, e.to_string())
+        })?;
     
     let semaphore_identity_commitment = U256::from_str(
         payload.semaphore_identity_commitment.as_str()
-    ).map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
+    ).map_err(|e| {
+        error!("invalid Semaphore Identity commitment: {e}");
+        (StatusCode::BAD_REQUEST, e.to_string())
+    })?;
 
     let verifier_message = TLSNVerifierMessage {
         registry,
@@ -80,8 +107,12 @@ pub async fn handle(
 
     let signature = signer::get().sign_message(message.as_slice())
         .await
-        .map_err(|e| (StatusCode::BAD_REQUEST, e.to_string()))?;
+        .map_err(|e| {
+            error!("unexpected error during message signing: {}", e);
+            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+        })?;
 
+    info!("verification completed");
     Ok(
         Json(VerifyResponse{
             verifier_message,

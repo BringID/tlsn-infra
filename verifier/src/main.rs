@@ -5,13 +5,13 @@ mod core;
 mod services;
 mod helpers;
 mod custom_handlers;
-
-use bincode;
+mod telemetry;
 use std::error::Error;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     config::init();
+    telemetry::init_logging();
     services::HandlersManager::register(
         "apple_devices_user_id".to_string(),
         custom_handlers::apple_devices_user_id

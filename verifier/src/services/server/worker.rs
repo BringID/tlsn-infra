@@ -13,8 +13,8 @@ pub async fn run() -> Result<(), Box<dyn Error>> {
 
     let listener = tokio::net::TcpListener::bind(&addr).await?;
 
-    println!("zkBring TLSNotary Verifier");
-    println!("Listening on port {port}");
+    // println!("zkBring TLSNotary Verifier");
+    // println!("Listening on port {port}");
 
     axum::serve(listener, app).await?;
     Ok(())

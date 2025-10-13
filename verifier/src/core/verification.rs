@@ -5,6 +5,7 @@ mod presentation_check;
 use std::error::Error;
 use std::fmt::Debug;
 use serde::{Deserialize, Serialize};
+use tracing::{instrument, error, warn};
 pub use presentation_check::PresentationCheck;
 use crate::services::HandlersManager;
 
@@ -17,33 +18,47 @@ pub struct Verification {
 }
 
 impl Verification {
+    #[instrument(
+        level="info",
+        name="verification_check",
+        skip(self, server_name, transcript),
+    )]
     pub async fn check(
         &self,
         server_name: String,
         transcript: &Vec<String>
     ) -> Result<(), Box<dyn Error>> {
         if server_name != self.host {
-            return Err("Wrong server name".into());
+            error!("wrong server name");
+            return Err("wrong server name".into());
         }
 
         let Some(user_id_data) = transcript.get(self.user_id.window.id) else {
-            return Err("Missing user_id".into());
+            error!("missing user_id");
+            return Err("missing user_id".into());
         };
         if !self.user_id.check(user_id_data) {
-            return Err("Wrong user_id".into());
+            error!("wrong user_id");
+            return Err("wrong user_id".into());
         }
 
         for check in &self.checks {
             let Some(data) = transcript.get(check.window.id) else {
-                return Err("Missing data".into());
+                error!("missing check window data");
+                return Err("missing check window data".into());
             };
             if check.custom_handler.is_some() {
-                let (success, _) = HandlersManager::execute(check, data).await?;
+                let (success, _) = HandlersManager::execute(check, data)
+                    .await
+                    .inspect_err(
+                        |err| warn!("custom handler error: {err}")
+                    )?;
                 if !success {
-                    return Err("Check failed".into());
+                    warn!("custom handler failed check");
+                    return Err("check failed".into());
                 }
             } else if !check.check(data) {
-                return Err("Check failed".into());
+                return Err("check failed".into());
             }
         }
 

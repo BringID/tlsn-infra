@@ -1,8 +1,6 @@
 use std::error::Error;
-use alloy::hex;
-use alloy::primitives::{keccak256, B256};
+use alloy::primitives::{B256};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use crate::core::{PresentationCheck};
 
 #[derive(Debug, Serialize, Deserialize)]

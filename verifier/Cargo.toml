@@ -14,3 +14,9 @@ alloy = "1.0.12"
 dotenv = "0.15.0"
 rand = "0.9.1"
 serde_json = "1.0.140"
+
+tracing = "0.1.41"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+tracing-log = "0.2.0"
+tracing-appender = "0.2.3"
+tracing-error = "0.2.1"

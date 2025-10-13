@@ -14,14 +14,6 @@ pub struct PresentationCheck {
 }
 
 impl PresentationCheck {
-    pub fn new(window: Window, check: Check) -> Self {
-        Self { window, check, custom_handler: None }
-    }
-
-    pub fn from_json(json: &str) -> Result<Self, serde_json::Error> {
-        serde_json::from_str(json)
-    }
-
     pub fn check(&self, transcript: &str) -> bool {
         if self.window.key != "-" {
             if !transcript.trim_matches(' ').starts_with(&format!("\"{}\"", self.window.key)) {
@@ -29,13 +21,12 @@ impl PresentationCheck {
             }
             let Some(value) = transcript
                 .split_once(':')
-                .map(|(key, val)| val.trim_matches('"'))
+                .map(|(_, val)| val.trim_matches('"'))
             else {
                 return false;
             };
 
             // Trying to parse JSON array
-            println!("Checking value: {}", value);
             if let Ok(json_value) = serde_json::from_str::<Value>(value) {
                 if let Some(array) = json_value.as_array() {
                     return self.check_value(array);
