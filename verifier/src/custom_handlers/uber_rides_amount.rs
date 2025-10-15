@@ -21,7 +21,7 @@ pub fn handler(_: &PresentationCheck, transcript: &String) -> Result<(bool, Opti
 
     let valid_rides_count = rides
         .iter()
-        .filter(|ride| !ride.description.contains("Canceled") && !ride.description.contains("0.00"))
+        .filter(|ride| !ride.description.contains("Canceled"))
         .count();
 
     if valid_rides_count < 5 {
