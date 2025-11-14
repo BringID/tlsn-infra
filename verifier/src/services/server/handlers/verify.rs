@@ -7,7 +7,7 @@ use axum::{Json, http::StatusCode};
 use serde::{Serialize, Deserialize};
 use crate::signer;
 use crate::tlsn;
-use tracing::{info, error, instrument, warn, debug};
+use tracing::{info, error, instrument, warn, trace};
 
 fn serialize_u256_as_string<S>(value: &U256, serializer: S) -> Result<S::Ok, S::Error>
 where
@@ -60,7 +60,7 @@ pub async fn handle(
     Json(payload): Json<VerifyRequest>,
 ) -> Result<Json<VerifyResponse>, (StatusCode, String)> {
     info!("verification started");
-    debug!("{:?}", &payload);
+    trace!("{:?}", &payload);
     let presentation = hex::decode(payload.tlsn_presentation.as_str())
         .map_err(|e| {
             error!("Presentation decoding failed: {e}");
