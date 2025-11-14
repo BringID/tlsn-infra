@@ -33,7 +33,7 @@ sol! {
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Debug)]
 pub struct VerifyRequest {
     tlsn_presentation: String,
     registry: String,
@@ -60,6 +60,7 @@ pub async fn handle(
     Json(payload): Json<VerifyRequest>,
 ) -> Result<Json<VerifyResponse>, (StatusCode, String)> {
     info!("verification started");
+    dbg!(&payload);
     let presentation = hex::decode(payload.tlsn_presentation.as_str())
         .map_err(|e| {
             error!("Presentation decoding failed: {e}");

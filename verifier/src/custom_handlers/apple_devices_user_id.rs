@@ -3,6 +3,7 @@ use alloy::hex;
 use alloy::primitives::{keccak256, B256};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use tracing::debug;
 use crate::core::{PresentationCheck};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -25,7 +26,10 @@ pub fn handler(_: &PresentationCheck, transcript: &String) -> Result<(bool, Opti
     let user_id = items.get(0)
         .ok_or("Data array is empty")?
         .id
-        .as_bytes();
+        .clone();
+    debug!("Apple UserID: {}", user_id);
+    let user_id = user_id.as_bytes();
+
     let salt_vec = hex::decode(std::env::var("SALT_HEX")?)?;
     let mut buf = Vec::with_capacity(user_id.len() + salt_vec.len());
     buf.extend_from_slice(user_id);
