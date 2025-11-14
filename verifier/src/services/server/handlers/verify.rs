@@ -60,7 +60,7 @@ pub async fn handle(
     Json(payload): Json<VerifyRequest>,
 ) -> Result<Json<VerifyResponse>, (StatusCode, String)> {
     info!("verification started");
-    debug!(&payload);
+    debug!("{:?}", &payload);
     let presentation = hex::decode(payload.tlsn_presentation.as_str())
         .map_err(|e| {
             error!("Presentation decoding failed: {e}");
