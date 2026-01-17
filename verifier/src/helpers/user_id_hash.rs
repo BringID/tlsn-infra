@@ -6,6 +6,16 @@ use tracing::{error, instrument, warn};
 use crate::core::PresentationCheck;
 use crate::services::HandlersManager;
 
+pub fn user_id_hash_from_bytes(
+    user_id_bytes: &[u8]
+) -> Result<B256, Box<dyn Error>> {
+    let salt_vec = hex::decode(std::env::var("SALT_HEX")?)?;
+    let mut buf = Vec::with_capacity(user_id_bytes.len() + salt_vec.len());
+    buf.extend_from_slice(user_id_bytes);
+    buf.extend_from_slice(salt_vec.as_slice());
+    Ok(keccak256(&buf))
+}
+
 #[instrument(
     name="user_id_hash",
     level="info",
@@ -56,11 +66,7 @@ pub async fn user_id_hash(
                     .trim()
                     .trim_matches('"')
                     .as_bytes();
-                let salt_vec = hex::decode(std::env::var("SALT_HEX")?)?;
-                let mut buf = Vec::with_capacity(id_bytes.len() + salt_vec.len());
-                buf.extend_from_slice(id_bytes);
-                buf.extend_from_slice(salt_vec.as_slice());
-                Ok(keccak256(&buf))
+                user_id_hash_from_bytes(id_bytes)
             }
         }
     }

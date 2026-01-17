@@ -109,5 +109,27 @@
         "value": 1
       }
     ]
+  },
+  "6": {
+    "id": "6",
+    "host": "apps.apple.com",
+    "user_id": {
+      "window": {
+        "id": 1,
+        "key": "id"
+      },
+      "type": "any"
+    },
+    "checks": [
+      {
+        "window": {
+          "id": 0,
+          "check_key": true,
+          "key": "active"
+        },
+        "type": "len_gte",
+        "value": 5
+      }
+    ]
   }
 }
