@@ -3914,6 +3914,7 @@ dependencies = [
  "axum",
  "bincode",
  "dotenv",
+ "once_cell",
  "rand 0.9.1",
  "serde",
  "serde_json",

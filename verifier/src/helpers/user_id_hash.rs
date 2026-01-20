@@ -6,6 +6,12 @@ use tracing::{error, instrument, warn};
 use crate::core::PresentationCheck;
 use crate::services::HandlersManager;
 
+pub fn random_user_id_hash() -> B256 {
+    let mut random_bytes = [0u8; 32];
+    rng().fill_bytes(&mut random_bytes);
+    B256::from(random_bytes)
+}
+
 pub fn user_id_hash_from_bytes(
     user_id_bytes: &[u8]
 ) -> Result<B256, Box<dyn Error>> {
@@ -28,9 +34,7 @@ pub async fn user_id_hash(
 ) -> Result<B256, Box<dyn Error>> {
     match std::env::var("ENV") {
         Ok(env) if env == "dev"  => {
-            let mut random_bytes = [0u8; 32];
-            rng().fill_bytes(&mut random_bytes);
-            Ok(B256::from(random_bytes))
+            Ok(random_user_id_hash())
         }
         _ => {
             if check.custom_handler.is_some() {

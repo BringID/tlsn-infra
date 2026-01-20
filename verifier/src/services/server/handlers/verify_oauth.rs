@@ -1,17 +1,19 @@
 use std::str::FromStr;
 use alloy::signers::{Signer, Signature};
 use alloy::{sol};
-use alloy::primitives::{Address, aliases::U256, hex, keccak256};
+use alloy::primitives::{Address, aliases::U256, hex, keccak256, B256};
 use alloy::sol_types::{SolValue};
 use alloy::sol_types::sol_data::Int;
 use axum::{Json, http::StatusCode};
+use rand::rng;
 use serde::{Serialize, Deserialize};
 use serde_json::Number;
 use crate::signer;
 use crate::tlsn;
 use tracing::{info, error, instrument, warn, trace};
 use tracing_subscriber::field::display::Messages;
-use crate::helpers::{registry_from_string, user_id_hash_from_bytes, verifier_response, VerifyResponse};
+use crate::helpers::{random_user_id_hash, registry_from_string, user_id_hash_from_bytes, verifier_response, VerifyResponse, OAUTH_SIGNER};
+use crate::services::{OAuthVerificationManager, VerificationManager};
 
 sol! {
     #[derive(Deserialize, Serialize, Debug)]
@@ -63,7 +65,38 @@ pub async fn handle(
             (StatusCode::BAD_REQUEST, e.to_string())
         })?;
 
-    info!("Recovered address: {}", recovered_address);
+    let id_hash: B256;
+
+    match std::env::var("ENV") {
+        Ok(ref value) if value == "dev" => {
+            id_hash = random_user_id_hash();
+        }
+        _ => {
+            if recovered_address != *OAUTH_SIGNER {
+                return Err((StatusCode::UNAUTHORIZED, "Wrong OAuth signer".to_string()));
+            }
+            id_hash = user_id_hash_from_bytes(
+                payload.message.user_id.as_bytes()
+            ).map_err(|e| {
+                error!("invalid Semaphore Identity commitment: {e}");
+                (StatusCode::BAD_REQUEST, e.to_string())
+            })?;
+        }
+    }
+
+    let verification = OAuthVerificationManager::get(&payload.credential_group_id)
+        .ok_or_else(|| {
+            error!("verification is not found");
+            (StatusCode::INTERNAL_SERVER_ERROR, "verification is not found".to_string())
+        })?
+        .clone();
+
+    verification.check(
+        payload.message.domain,
+        payload.message.score.to::<i32>()
+    ).await.map_err(
+        |e| { (StatusCode::BAD_REQUEST, e.to_string()) }
+    )?;
 
     // Build Verifier message
     let semaphore_identity_commitment = U256::from_str(
@@ -72,13 +105,6 @@ pub async fn handle(
         error!("invalid Semaphore Identity commitment: {e}");
         (StatusCode::BAD_REQUEST, e.to_string())
     })?;
-
-    let id_hash = user_id_hash_from_bytes(
-        payload.message.user_id.as_bytes()
-    ).map_err(|e| {
-        error!("invalid Semaphore Identity commitment: {e}");
-        (StatusCode::BAD_REQUEST, e.to_string())
-    })?;;
 
     verifier_response(
         payload.registry,
