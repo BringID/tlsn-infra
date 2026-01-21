@@ -1,0 +1,32 @@
+{
+  "6": {
+    "id": "6",
+    "domain": "github.com",
+    "score": 10
+  },
+  "7": {
+    "id": "7",
+    "domain": "github.com",
+    "score": 30
+  },
+  "8": {
+    "id": "8",
+    "domain": "github.com",
+    "score": 70
+  },
+  "9": {
+    "id": "9",
+    "domain": "x.com",
+    "score": 10
+  },
+  "10": {
+    "id": "10",
+    "domain": "x.com",
+    "score": 30
+  },
+  "11": {
+    "id": "11",
+    "domain": "x.com",
+    "score": 70
+  }
+}
