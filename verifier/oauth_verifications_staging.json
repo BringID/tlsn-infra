@@ -28,5 +28,20 @@
     "id": "13",
     "domain": "x.com",
     "score": 70
+  },
+  "14": {
+    "id": "14",
+    "domain": "farcaster.xyz",
+    "score": 10
+  },
+  "15": {
+    "id": "15",
+    "domain": "farcaster.xyz",
+    "score": 30
+  },
+  "16": {
+    "id": "16",
+    "domain": "farcaster.xyz",
+    "score": 70
   }
 }
