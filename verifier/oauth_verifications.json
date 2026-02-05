@@ -43,5 +43,10 @@
     "id": "14",
     "domain": "farcaster.xyz",
     "score": 70
+  },
+  "15": {
+    "id": "15",
+    "domain": "zkpassport.id",
+    "score": 100
   }
 }
