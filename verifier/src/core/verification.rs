@@ -4,6 +4,7 @@ mod presentation_check;
 
 use std::error::Error;
 use std::fmt::Debug;
+use alloy::primitives::U256;
 use serde::{Deserialize, Serialize};
 use tracing::{instrument, error, warn};
 pub use presentation_check::PresentationCheck;
@@ -26,7 +27,8 @@ impl Verification {
     pub async fn check(
         &self,
         server_name: String,
-        transcript: &Vec<String>
+        transcript: &Vec<String>,
+        app_id: &U256,
     ) -> Result<(), Box<dyn Error>> {
         if server_name != self.host {
             error!("wrong server name");
@@ -48,7 +50,7 @@ impl Verification {
                 return Err("missing check window data".into());
             };
             if check.custom_handler.is_some() {
-                let (success, _) = HandlersManager::execute(check, data)
+                let (success, _) = HandlersManager::execute(check, data, app_id)
                     .await
                     .inspect_err(
                         |err| warn!("custom handler error: {err}")

@@ -1,5 +1,5 @@
 use std::error::Error;
-use alloy::primitives::{B256};
+use alloy::primitives::{B256, U256};
 use serde::{Deserialize, Serialize};
 use crate::core::{PresentationCheck};
 
@@ -9,13 +9,13 @@ struct RideData {
     description: String,
 }
 
-pub fn handler(_: &PresentationCheck, transcript: &String) -> Result<(bool, Option<B256>), Box<dyn Error>> {
+pub fn handler(_: &PresentationCheck, transcript: &str, _app_id: &U256) -> Result<(bool, Option<B256>), Box<dyn Error>> {
     let (key, value) = transcript
         .split_once(":")
         .ok_or("Wrong transcript provided")?;
 
     if key.trim() != "\"activities\"" {
-        return Err("Wrong transcript provided - \"devices\" key was not found".into());
+        return Err("Wrong transcript provided - \"activities\" key was not found".into());
     }
     let rides: Vec<RideData> = serde_json::from_str(value)?;
 

@@ -1,9 +1,9 @@
 use std::error::Error;
-use alloy::hex;
-use alloy::primitives::{keccak256, B256};
+use alloy::primitives::{keccak256, B256, U256};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tracing::debug;
+use crate::config;
 use crate::core::{PresentationCheck};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -13,7 +13,7 @@ struct DeviceData {
     extra: std::collections::HashMap<String, Value>,
 }
 
-pub fn handler(_: &PresentationCheck, transcript: &String) -> Result<(bool, Option<B256>), Box<dyn Error>> {
+pub fn handler(_: &PresentationCheck, transcript: &str, app_id: &U256) -> Result<(bool, Option<B256>), Box<dyn Error>> {
     let (key, value) = transcript
         .split_once(":")
         .ok_or("Wrong transcript provided")?;
@@ -23,19 +23,20 @@ pub fn handler(_: &PresentationCheck, transcript: &String) -> Result<(bool, Opti
     }
     let items: Vec<DeviceData> = serde_json::from_str(value)?;
 
-    let user_id = items.get(0)
+    let user_id = items.first()
         .ok_or("Data array is empty")?
         .id
         .clone();
     debug!("Apple UserID: {}", user_id);
     let user_id = user_id.as_bytes();
 
-    let salt_vec = hex::decode(std::env::var("SALT_HEX")?)?;
-    let mut buf = Vec::with_capacity(user_id.len() + salt_vec.len());
+    let private_key_bytes = config::get().private_key.to_bytes();
+    let mut buf = Vec::new();
     buf.extend_from_slice(user_id);
-    buf.extend_from_slice(salt_vec.as_slice());
+    buf.extend_from_slice(&app_id.to_be_bytes::<32>());
+    buf.extend_from_slice(&private_key_bytes);
 
-    let user_id_hash = keccak256(&buf);
+    let credential_id = keccak256(&buf);
 
-    Ok((true, Some(user_id_hash)))
+    Ok((true, Some(credential_id)))
 }

@@ -8,7 +8,6 @@ mod custom_handlers;
 mod telemetry;
 use std::error::Error;
 use tracing::info;
-use crate::helpers::random_user_id_hash;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {

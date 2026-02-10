@@ -1,51 +1,51 @@
 {
-  "6": {
-    "id": "6",
+  "1": {
+    "id": "1",
+    "domain": "farcaster.xyz",
+    "score": 10
+  },
+  "2": {
+    "id": "2",
+    "domain": "farcaster.xyz",
+    "score": 30
+  },
+  "3": {
+    "id": "3",
+    "domain": "farcaster.xyz",
+    "score": 70
+  },
+  "4": {
+    "id": "4",
     "domain": "github.com",
     "score": 10
   },
-  "7": {
-    "id": "7",
+  "5": {
+    "id": "5",
     "domain": "github.com",
     "score": 30
   },
-  "8": {
-    "id": "8",
+  "6": {
+    "id": "6",
     "domain": "github.com",
     "score": 70
+  },
+  "7": {
+    "id": "7",
+    "domain": "x.com",
+    "score": 10
+  },
+  "8": {
+    "id": "8",
+    "domain": "x.com",
+    "score": 30
   },
   "9": {
     "id": "9",
     "domain": "x.com",
-    "score": 10
+    "score": 70
   },
   "10": {
     "id": "10",
-    "domain": "x.com",
-    "score": 30
-  },
-  "11": {
-    "id": "11",
-    "domain": "x.com",
-    "score": 70
-  },
-  "12": {
-    "id": "12",
-    "domain": "farcaster.xyz",
-    "score": 10
-  },
-  "13": {
-    "id": "13",
-    "domain": "farcaster.xyz",
-    "score": 30
-  },
-  "14": {
-    "id": "14",
-    "domain": "farcaster.xyz",
-    "score": 70
-  },
-  "15": {
-    "id": "15",
     "domain": "zkpassport.id",
     "score": 100
   }

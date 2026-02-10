@@ -1,11 +1,11 @@
-mod user_id_hash;
+mod credential_id;
 mod registry;
 mod verifier_response;
 mod oauth_signer;
 
-pub use user_id_hash::user_id_hash;
-pub use user_id_hash::random_user_id_hash;
-pub use user_id_hash::user_id_hash_from_bytes;
+pub use credential_id::credential_id;
+pub use credential_id::random_credential_id;
+pub use credential_id::credential_id_from_bytes;
 pub use registry::registry_from_string;
 pub use verifier_response::verifier_response;
 pub use verifier_response::VerifyResponse;
