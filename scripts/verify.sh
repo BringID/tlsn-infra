@@ -121,7 +121,7 @@ echo ""
 echo "Sending POST $VERIFIER_URL/verify ..."
 echo ""
 
-RESPONSE=$(curl -s -w "\n%{http_code}" \
+RESPONSE=$(curl -s --max-time 60 -w "\n%{http_code}" \
     -X POST "$VERIFIER_URL/verify" \
     -H "Content-Type: application/json" \
     -d "$(jq -n \
