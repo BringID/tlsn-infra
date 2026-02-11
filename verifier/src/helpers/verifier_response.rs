@@ -18,6 +18,14 @@ where
     serializer.serialize_str(&value.to_string())
 }
 
+fn serialize_u256_as_number<S>(value: &U256, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    let n: u64 = value.to::<u64>();
+    serializer.serialize_u64(n)
+}
+
 sol! {
     #[derive(Serialize)]
     struct Attestation {
@@ -34,7 +42,7 @@ sol! {
         #[serde(serialize_with = "serialize_u256_as_string")]
         uint256 semaphoreIdentityCommitment;
         #[serde(rename = "issued_at")]
-        #[serde(serialize_with = "serialize_u256_as_string")]
+        #[serde(serialize_with = "serialize_u256_as_number")]
         uint256 issuedAt;
     }
 }
