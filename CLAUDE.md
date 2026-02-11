@@ -76,6 +76,7 @@ make release             # push to ghcr.io/bringid/tlsn/proxy:latest
 | 12 | `riders.uber.com` | Uber ride count (custom handler) |
 | 13 | `speedysub.apps.apple.com` | Active Apple subscription (contains check) |
 | 14 | `www.binance.com` | Binance KYC level >= 2 (gte check) |
+| 15 | `www.okx.com` | OKX KYC level >= 2 (gte check) |
 
 ### Verification Configs
 - `verifier/verifications.json` — TLSN verification rules (host patterns, check types, user ID extraction)
