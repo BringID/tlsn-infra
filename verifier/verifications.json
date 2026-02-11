@@ -42,5 +42,26 @@
         "value": "Active"
       }
     ]
+  },
+  "14": {
+    "id": "14",
+    "host": "www.binance.com",
+    "user_id": {
+      "window": {
+        "id": 0,
+        "key": "userId"
+      },
+      "type": "any"
+    },
+    "checks": [
+      {
+        "window": {
+          "id": 1,
+          "key": "kycLevel"
+        },
+        "type": "gte",
+        "value": 2
+      }
+    ]
   }
 }

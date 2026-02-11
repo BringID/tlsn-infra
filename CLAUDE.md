@@ -70,6 +70,13 @@ make release             # push to ghcr.io/bringid/tlsn/proxy:latest
 - **custom_handlers/** — domain-specific logic (Apple device ID extraction, Apple subscription ID extraction, Uber ride counting)
 - **helpers/** — user ID hashing (keccak256 with salt), response construction and signing, registry address parsing
 
+### Credential Groups (`verifications.json`)
+| ID | Host | What it proves |
+|----|------|----------------|
+| 12 | `riders.uber.com` | Uber ride count (custom handler) |
+| 13 | `speedysub.apps.apple.com` | Active Apple subscription (contains check) |
+| 14 | `www.binance.com` | Binance KYC level >= 2 (gte check) |
+
 ### Verification Configs
 - `verifier/verifications.json` — TLSN verification rules (host patterns, check types, user ID extraction)
 - `verifier/oauth_verifications.json` — production OAuth provider/score mappings
