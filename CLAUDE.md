@@ -2,6 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Git Workflow
+
+- **NEVER merge or push directly to `main`.** All PRs must target `staging`.
+- Feature branches are merged into `staging` first, then promoted to `main` via a separate process.
+
 ## Project Overview
 
 zkBring TLSNotary Infrastructure — a privacy-preserving credential verification system. Users prove aspects of their online identity (e.g., Twitter followers, Uber rides, Apple devices) without revealing sensitive data. Proofs are verified and signed with Ethereum-compatible keys for on-chain submission.
