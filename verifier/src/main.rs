@@ -21,6 +21,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         "uber_rides_amount".to_string(),
         custom_handlers::uber_rides_amount
     ).await?;
+    services::HandlersManager::register(
+        "apple_subs_user_id".to_string(),
+        custom_handlers::apple_subs_user_id
+    ).await?;
 
     let oauth_verification_conf: &str;
     match std::env::var("ENV") {

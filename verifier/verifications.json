@@ -20,5 +20,27 @@
         "custom_handler": "uber_rides_amount"
       }
     ]
+  },
+  "13": {
+    "id": "13",
+    "host": "speedysub.apps.apple.com",
+    "user_id": {
+      "window": {
+        "id": 0,
+        "key": "subscriptionId"
+      },
+      "type": "custom",
+      "custom_handler": "apple_subs_user_id"
+    },
+    "checks": [
+      {
+        "window": {
+          "id": 1,
+          "key": "status"
+        },
+        "type": "contains",
+        "value": "Active"
+      }
+    ]
   }
 }
