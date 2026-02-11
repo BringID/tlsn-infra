@@ -63,5 +63,26 @@
         "value": 2
       }
     ]
+  },
+  "15": {
+    "id": "15",
+    "host": "www.okx.com",
+    "user_id": {
+      "window": {
+        "id": 1,
+        "key": "uuid"
+      },
+      "type": "any"
+    },
+    "checks": [
+      {
+        "window": {
+          "id": 2,
+          "key": "kycLevel"
+        },
+        "type": "gte",
+        "value": 2
+      }
+    ]
   }
 }
