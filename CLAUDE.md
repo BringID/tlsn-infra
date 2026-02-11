@@ -62,7 +62,7 @@ make release             # push to ghcr.io/bringid/tlsn/proxy:latest
   - `server/` — Axum router and HTTP handlers (`root`, `verify_tlsn`, `verify_oauth`)
   - `verification_manager/` — loads and caches TLSN verification configs from `verifications.json`
   - `handlers_manager/` — dynamic custom handler registry
-- **custom_handlers/** — domain-specific logic (Apple device ID extraction, Uber ride counting)
+- **custom_handlers/** — domain-specific logic (Apple device ID extraction, Apple subscription ID extraction, Uber ride counting)
 - **helpers/** — user ID hashing (keccak256 with salt), response construction and signing, registry address parsing
 
 ### Verification Configs
@@ -78,7 +78,12 @@ make release             # push to ghcr.io/bringid/tlsn/proxy:latest
 5. Response is ABI-encoded and signed with verifier's private key for on-chain submission
 
 ### Custom Handlers
-Pluggable functions registered at startup in `main.rs`. Each handler receives a `PresentationCheck` and transcript string, returns `(bool, Option<B256>)` (success flag + optional user_id_hash). Add new handlers by:
+Pluggable functions registered at startup in `main.rs`. Each handler receives a `PresentationCheck`, transcript string, and `app_id`, returns `Result<(bool, Option<B256>)>` (success flag + optional credential_id). Current handlers:
+- `apple_devices_user_id` — extracts device ID from Apple device list proofs (`speedysub.apps.apple.com`)
+- `apple_subs_user_id` — extracts subscriptionId from Apple subscription proofs (`speedysub.apps.apple.com`)
+- `uber_rides_amount` — counts non-canceled rides from Uber trip history (`riders.uber.com`)
+
+Add new handlers by:
 1. Creating a function in `custom_handlers/`
 2. Exporting it in `custom_handlers.rs`
 3. Registering it in `main.rs` via `HandlersManager::register()`
