@@ -1,12 +1,11 @@
 use std::collections::HashMap;
 use std::error::Error;
 use std::sync::OnceLock;
-use alloy::primitives::{B256};
+use alloy::primitives::{B256, U256};
 use tokio::sync::RwLock;
 use crate::core::{PresentationCheck};
 
-// For now, it returns 32 bytes of payload data which is need for user_id_hash check and might be used for chained checks
-type HandlerFn = fn(&PresentationCheck, &String) -> Result<(bool, Option<B256>), Box<dyn Error>>;
+type HandlerFn = fn(&PresentationCheck, &str, &U256) -> Result<(bool, Option<B256>), Box<dyn Error>>;
 
 static HANDLERS: OnceLock<RwLock<HashMap<String, HandlerFn>>> = OnceLock::new();
 
@@ -25,11 +24,12 @@ impl HandlersManager {
 
     pub async fn execute(
         check: &PresentationCheck,
-        transcript: &String,
+        transcript: &str,
+        app_id: &U256,
     ) -> Result<(bool, Option<B256>), Box<dyn Error>> {
         if let Some(key) = &check.custom_handler {
             if let Some(handler) = Self::get_handler(key).await {
-                handler(check, transcript)
+                handler(check, transcript, app_id)
             } else {
                 Err("Handler is not set for the Check".into())
             }

@@ -1,11 +1,12 @@
 use std::str::FromStr;
+use std::time::{SystemTime, UNIX_EPOCH};
 use alloy::{hex, sol};
 use alloy::primitives::{keccak256, B256, U256};
 use alloy::sol_types::SolValue;
 use alloy::transports::http::reqwest::StatusCode;
-use alloy::signers::{Signer, Signature};
+use alloy::signers::Signer;
 use axum::Json;
-use serde::{Serialize};
+use serde::Serialize;
 use tracing::{error, info};
 use crate::helpers::registry_from_string;
 use crate::signer;
@@ -17,24 +18,38 @@ where
     serializer.serialize_str(&value.to_string())
 }
 
+fn serialize_u256_as_number<S>(value: &U256, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: serde::Serializer,
+{
+    let n: u64 = value.to::<u64>();
+    serializer.serialize_u64(n)
+}
+
 sol! {
     #[derive(Serialize)]
-    struct TLSNVerifierMessage {
+    struct Attestation {
         address registry;
         #[serde(rename = "credential_group_id")]
         #[serde(serialize_with = "serialize_u256_as_string")]
         uint256 credentialGroupId;
-        #[serde(rename = "id_hash")]
-        bytes32 idHash;
+        #[serde(rename = "credential_id")]
+        bytes32 credentialId;
+        #[serde(rename = "app_id")]
+        #[serde(serialize_with = "serialize_u256_as_string")]
+        uint256 appId;
         #[serde(rename = "semaphore_identity_commitment")]
         #[serde(serialize_with = "serialize_u256_as_string")]
         uint256 semaphoreIdentityCommitment;
+        #[serde(rename = "issued_at")]
+        #[serde(serialize_with = "serialize_u256_as_number")]
+        uint256 issuedAt;
     }
 }
 
 #[derive(Serialize)]
 pub struct VerifyResponse {
-    verifier_message: TLSNVerifierMessage,
+    attestation: Attestation,
     verifier_hash: String,
     signature: String,
 }
@@ -42,21 +57,36 @@ pub struct VerifyResponse {
 pub async fn verifier_response(
     registry_address: String,
     credential_group_id: String,
+    app_id: String,
     semaphore_identity_commitment: U256,
-    id_hash: B256
+    credential_id: B256,
 ) -> Result<Json<VerifyResponse>, (StatusCode, String)> {
     let registry = registry_from_string(registry_address)
         .map_err(|e| {
             (StatusCode::BAD_REQUEST, e.to_string())
         })?;
 
-    let verifier_message = TLSNVerifierMessage {
+    let app_id = U256::from_str(app_id.as_str()).map_err(|e| {
+        error!("invalid app_id: {e}");
+        (StatusCode::BAD_REQUEST, e.to_string())
+    })?;
+
+    let issued_at = U256::from(
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time before unix epoch")
+            .as_secs()
+    );
+
+    let attestation = Attestation {
         registry,
         credentialGroupId: U256::from_str(credential_group_id.as_str()).map_err(|e| {(StatusCode::BAD_REQUEST, e.to_string())})?,
+        credentialId: credential_id,
+        appId: app_id,
         semaphoreIdentityCommitment: semaphore_identity_commitment,
-        idHash: id_hash,
+        issuedAt: issued_at,
     };
-    let message = keccak256(verifier_message.abi_encode());
+    let message = keccak256(attestation.abi_encode());
     let signature = signer::get().sign_message(message.as_slice())
         .await
         .map_err(|e| {
@@ -64,10 +94,10 @@ pub async fn verifier_response(
             (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
         })?;
 
-    info!("Oauth verification completed");
+    info!("verification completed");
     Ok(
         Json(VerifyResponse {
-            verifier_message,
+            attestation,
             verifier_hash: hex::encode_prefixed(message),
             signature: signature.to_string(),
         })

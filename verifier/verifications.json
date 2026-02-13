@@ -1,6 +1,6 @@
 {
-  "1": {
-    "id": "1",
+  "12": {
+    "id": "12",
     "host": "riders.uber.com",
     "user_id": {
       "window": {
@@ -21,114 +21,67 @@
       }
     ]
   },
-  "2": {
-    "id": "2",
-    "host": "x.com",
-    "user_id": {
-      "window": {
-        "id": 1,
-        "key": "id"
-      },
-      "type": "any"
-    },
-    "checks": [
-      {
-        "window": {
-          "id": 0,
-          "check_key": true,
-          "key": "verified_follower_count"
-        },
-        "type": "gte",
-        "value": 1000
-      }
-    ]
-  },
-  "3": {
-    "id": "3",
-    "host": "x.com",
-    "user_id": {
-      "window": {
-        "id": 1,
-        "key": "id"
-      },
-      "type": "any"
-    },
-    "checks": [
-      {
-        "window": {
-          "id": 0,
-          "check_key": true,
-          "key": "verified_follower_count"
-        },
-        "type": "gte",
-        "value": 100
-      }
-    ]
-  },
-  "4": {
-    "id": "4",
-    "host": "x.com",
-    "user_id": {
-      "window": {
-        "id": 1,
-        "key": "id"
-      },
-      "type": "any"
-    },
-    "checks": [
-      {
-        "window": {
-          "id": 0,
-          "check_key": true,
-          "key": "verified_follower_count"
-        },
-        "type": "gte",
-        "value": 10
-      }
-    ]
-  },
-  "5": {
-    "id": "5",
-    "host": "account.apple.com",
+  "13": {
+    "id": "13",
+    "host": "speedysub.apps.apple.com",
     "user_id": {
       "window": {
         "id": 0,
-        "key": "-"
+        "key": "subscriptionId"
       },
       "type": "custom",
-      "custom_handler": "apple_devices_user_id"
+      "custom_handler": "apple_subs_user_id"
     },
     "checks": [
       {
         "window": {
-          "id": 0,
-          "check_key": true,
-          "key": "devices"
+          "id": 1,
+          "key": "status"
         },
-        "type": "len_gte",
-        "value": 1
+        "type": "contains",
+        "value": "Active"
       }
     ]
   },
-  "6": {
-    "id": "6",
-    "host": "apps.apple.com",
+  "14": {
+    "id": "14",
+    "host": "www.binance.com",
     "user_id": {
       "window": {
-        "id": 1,
-        "key": "id"
+        "id": 0,
+        "key": "userId"
       },
       "type": "any"
     },
     "checks": [
       {
         "window": {
-          "id": 0,
-          "check_key": true,
-          "key": "active"
+          "id": 1,
+          "key": "kycLevel"
         },
-        "type": "len_gte",
-        "value": 5
+        "type": "gte",
+        "value": 2
+      }
+    ]
+  },
+  "15": {
+    "id": "15",
+    "host": "www.okx.com",
+    "user_id": {
+      "window": {
+        "id": 1,
+        "key": "uuid"
+      },
+      "type": "any"
+    },
+    "checks": [
+      {
+        "window": {
+          "id": 2,
+          "key": "kycLevel"
+        },
+        "type": "gte",
+        "value": 2
       }
     ]
   }

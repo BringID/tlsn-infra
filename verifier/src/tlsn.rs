@@ -1,14 +1,14 @@
 use std::error::Error;
+use std::str::FromStr;
 use alloy::hex::ToHexExt;
-use alloy::primitives::{B256};
+use alloy::primitives::{B256, U256};
 use tlsn_core::presentation::{Presentation, PresentationOutput};
 use tlsn_core::{CryptoProvider};
 use tracing::{debug, trace, instrument, error};
 use crate::{config};
 use crate::services::VerificationManager;
-use crate::helpers::user_id_hash;
+use crate::helpers::credential_id;
 
-// Returns user_id_hash
 #[instrument(
     name="proof_verifier",
     level="info",
@@ -17,6 +17,7 @@ use crate::helpers::user_id_hash;
 pub async fn verify_proof(
     presentation: Presentation,
     credential_group_id: &String,
+    app_id: &str,
 ) -> Result<B256, Box<dyn Error>> {
     debug!("verification started");
     let PresentationOutput {
@@ -58,7 +59,10 @@ pub async fn verify_proof(
         })?
         .clone();
 
-    let uh = user_id_hash(&transcript_authed, &verification.user_id).await?;
+    let app_id_u256 = U256::from_str(app_id)
+        .map_err(|e| -> Box<dyn Error> { format!("invalid app_id: {e}").into() })?;
+
+    let cid = credential_id(&transcript_authed, &verification.user_id, &app_id_u256).await?;
 
     if attestation.body.verifying_key() != &config::get().notary_key {
         error!("invalid notary key");
@@ -72,9 +76,10 @@ pub async fn verify_proof(
 
     verification.check(
         server_name.to_string(),
-        &transcript_authed
+        &transcript_authed,
+        &app_id_u256,
     ).await?;
 
     debug!("proof verified");
-    Ok(uh)
+    Ok(cid)
 }
