@@ -28,6 +28,7 @@ pub struct VerifyRequest {
     credential_group_id: String,
     app_id: String,
     registry: String,
+    chain_id: String,
 }
 
 #[instrument(
@@ -107,6 +108,7 @@ pub async fn handle(
 
     verifier_response(
         payload.registry,
+        payload.chain_id,
         payload.credential_group_id,
         payload.app_id,
         semaphore_identity_commitment,

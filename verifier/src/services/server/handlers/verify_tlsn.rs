@@ -10,6 +10,7 @@ use tracing::{info, error, instrument, warn, trace};
 pub struct VerifyRequest {
     tlsn_presentation: String,
     registry: String,
+    chain_id: String,
     credential_group_id: String,
     app_id: String,
     semaphore_identity_commitment: String,
@@ -54,6 +55,7 @@ pub async fn handle(
 
     verifier_response(
         payload.registry,
+        payload.chain_id,
         payload.credential_group_id,
         payload.app_id,
         semaphore_identity_commitment,
