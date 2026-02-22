@@ -30,6 +30,9 @@ sol! {
     #[derive(Serialize)]
     struct Attestation {
         address registry;
+        #[serde(rename = "chain_id")]
+        #[serde(serialize_with = "serialize_u256_as_number")]
+        uint256 chainId;
         #[serde(rename = "credential_group_id")]
         #[serde(serialize_with = "serialize_u256_as_string")]
         uint256 credentialGroupId;
@@ -54,8 +57,11 @@ pub struct VerifyResponse {
     signature: String,
 }
 
+const VALID_CHAIN_IDS: &[u64] = &[8453, 84532];
+
 pub async fn verifier_response(
     registry_address: String,
+    chain_id: String,
     credential_group_id: String,
     app_id: String,
     semaphore_identity_commitment: U256,
@@ -65,6 +71,16 @@ pub async fn verifier_response(
         .map_err(|e| {
             (StatusCode::BAD_REQUEST, e.to_string())
         })?;
+
+    let chain_id: u64 = chain_id.parse().map_err(|e: std::num::ParseIntError| {
+        error!("invalid chain_id: {e}");
+        (StatusCode::BAD_REQUEST, e.to_string())
+    })?;
+
+    if !VALID_CHAIN_IDS.contains(&chain_id) {
+        error!("unsupported chain_id: {chain_id}");
+        return Err((StatusCode::BAD_REQUEST, format!("unsupported chain_id: {chain_id}")));
+    }
 
     let app_id = U256::from_str(app_id.as_str()).map_err(|e| {
         error!("invalid app_id: {e}");
@@ -80,6 +96,7 @@ pub async fn verifier_response(
 
     let attestation = Attestation {
         registry,
+        chainId: U256::from(chain_id),
         credentialGroupId: U256::from_str(credential_group_id.as_str()).map_err(|e| {(StatusCode::BAD_REQUEST, e.to_string())})?,
         credentialId: credential_id,
         appId: app_id,
