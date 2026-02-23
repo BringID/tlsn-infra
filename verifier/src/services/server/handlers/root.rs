@@ -13,7 +13,7 @@ pub struct RootResponse {
 pub async fn handle() -> Json<RootResponse> {
     Json(
         RootResponse{
-            info: "zkBring TLSNotary Verifier".to_string(),
+            info: "BringID Verifier".to_string(),
             version: env!("CARGO_PKG_VERSION").to_string(),
             verifier_address: signer::get().address().to_string(),
         }

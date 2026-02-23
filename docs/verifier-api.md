@@ -1,6 +1,6 @@
 # Verifier API Reference
 
-Reference for consuming repos (widget, browser extension) integrating with the zkBring TLSNotary Verifier.
+Reference for consuming repos (widget, browser extension) integrating with the BringID Verifier.
 
 ## Service URLs
 
@@ -104,7 +104,7 @@ Returns service info and the verifier's Ethereum address.
 
 ```json
 {
-  "info": "zkBring TLSNotary Verifier",
+  "info": "BringID Verifier",
   "version": "0.1.0",
   "verifier_address": "0x3c50f7055D804b51e506Bc1EA7D082cB1548376C"
 }
