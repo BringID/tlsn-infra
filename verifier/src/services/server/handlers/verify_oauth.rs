@@ -29,7 +29,7 @@ pub struct VerifyRequest {
     credential_group_id: String,
     app_id: String,
     registry: String,
-    chain_id: String,
+    chain_id: u64,
 }
 
 pub async fn handle(

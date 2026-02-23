@@ -60,7 +60,7 @@ const VALID_CHAIN_IDS: &[u64] = &[8453, 84532];
 
 pub async fn verifier_response(
     registry_address: String,
-    chain_id: String,
+    chain_id: u64,
     credential_group_id: String,
     app_id: String,
     semaphore_identity_commitment: U256,
@@ -70,11 +70,6 @@ pub async fn verifier_response(
         .map_err(|e| {
             ApiError::bad_request(ErrorCode::InvalidRegistryAddress, e)
         })?;
-
-    let chain_id: u64 = chain_id.parse().map_err(|e: std::num::ParseIntError| {
-        error!("invalid chain_id: {e}");
-        ApiError::bad_request(ErrorCode::InvalidChainId, e)
-    })?;
 
     if !VALID_CHAIN_IDS.contains(&chain_id) {
         error!("unsupported chain_id: {chain_id}");

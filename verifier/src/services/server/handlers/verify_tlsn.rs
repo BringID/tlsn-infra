@@ -11,7 +11,7 @@ use tracing::{info, error, instrument, warn, trace};
 pub struct VerifyRequest {
     tlsn_presentation: String,
     registry: String,
-    chain_id: String,
+    chain_id: u64,
     credential_group_id: String,
     app_id: String,
     semaphore_identity_commitment: String,
