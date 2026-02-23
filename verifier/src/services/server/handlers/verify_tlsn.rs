@@ -1,5 +1,6 @@
 use std::str::FromStr;
 use alloy::primitives::{aliases::U256, hex};
+use axum::extract::rejection::JsonRejection;
 use axum::Json;
 use serde::Deserialize;
 use crate::tlsn;
@@ -16,6 +17,13 @@ pub struct VerifyRequest {
     semaphore_identity_commitment: String,
 }
 
+pub async fn handle(
+    payload: Result<Json<VerifyRequest>, JsonRejection>,
+) -> Result<Json<VerifyResponse>, ApiError> {
+    let Json(payload) = payload.map_err(ApiError::from)?;
+    handle_inner(payload).await
+}
+
 #[instrument(
     name="handler",
     skip(payload),
@@ -24,8 +32,8 @@ pub struct VerifyRequest {
         commitment = %payload.semaphore_identity_commitment
     )
 )]
-pub async fn handle(
-    Json(payload): Json<VerifyRequest>,
+async fn handle_inner(
+    payload: VerifyRequest,
 ) -> Result<Json<VerifyResponse>, ApiError> {
     info!("verification started");
     trace!("{:?}", &payload);

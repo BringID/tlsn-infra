@@ -1,3 +1,4 @@
+use axum::extract::rejection::JsonRejection;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
@@ -38,6 +39,14 @@ pub enum ErrorCode {
     InvalidCredentialGroupId,
     #[serde(rename = "SIGNING_FAILED")]
     SigningFailed,
+    #[serde(rename = "INVALID_REQUEST_BODY")]
+    InvalidRequestBody,
+}
+
+impl From<JsonRejection> for ApiError {
+    fn from(rejection: JsonRejection) -> Self {
+        ApiError::bad_request(ErrorCode::InvalidRequestBody, rejection)
+    }
 }
 
 #[derive(Debug, Serialize)]
