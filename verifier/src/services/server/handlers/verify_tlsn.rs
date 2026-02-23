@@ -1,9 +1,9 @@
 use std::str::FromStr;
 use alloy::primitives::{aliases::U256, hex};
-use axum::{Json, http::StatusCode};
+use axum::Json;
 use serde::Deserialize;
 use crate::tlsn;
-use crate::helpers::{verifier_response, VerifyResponse};
+use crate::helpers::{verifier_response, VerifyResponse, ApiError, ErrorCode};
 use tracing::{info, error, instrument, warn, trace};
 
 #[derive(Deserialize, Debug)]
@@ -26,31 +26,31 @@ pub struct VerifyRequest {
 )]
 pub async fn handle(
     Json(payload): Json<VerifyRequest>,
-) -> Result<Json<VerifyResponse>, (StatusCode, String)> {
+) -> Result<Json<VerifyResponse>, ApiError> {
     info!("verification started");
     trace!("{:?}", &payload);
     let presentation = hex::decode(payload.tlsn_presentation.as_str())
         .map_err(|e| {
             error!("Presentation decoding failed: {e}");
-            (StatusCode::BAD_REQUEST, e.to_string())
+            ApiError::bad_request(ErrorCode::PresentationDecodeFailed, e)
         })?;
     let presentation = bincode::deserialize(&presentation)
         .map_err(|e| {
             error!("Presentation deserialization failed: {e}");
-            (StatusCode::BAD_REQUEST, e.to_string())
+            ApiError::bad_request(ErrorCode::PresentationDeserializeFailed, e)
         })?;
 
     let credential_id = tlsn::verify_proof(presentation, &payload.credential_group_id, &payload.app_id).await
         .map_err(|e| {
             warn!("verification failed");
-            (StatusCode::BAD_REQUEST, e.to_string())
+            ApiError::bad_request(ErrorCode::ProofVerificationFailed, e)
         })?;
 
     let semaphore_identity_commitment = U256::from_str(
         payload.semaphore_identity_commitment.as_str()
     ).map_err(|e| {
         error!("invalid Semaphore Identity commitment: {e}");
-        (StatusCode::BAD_REQUEST, e.to_string())
+        ApiError::bad_request(ErrorCode::InvalidSemaphoreCommitment, e)
     })?;
 
     verifier_response(
