@@ -91,11 +91,7 @@ Verify an OAuth credential and return a signed attestation.
 | `verifier_hash` | string | `keccak256(abi.encode(registry, chainId, credentialGroupId, credentialId, appId, semaphoreIdentityCommitment, issuedAt))` — the hash that was signed |
 | `signature` | string | ECDSA signature over the verifier_hash (as EthSignedMessage) |
 
-**Error responses:**
-- `400` — Invalid field values, unsupported chain_id, domain/score mismatch
-- `401` — Wrong OAuth signer (production only)
-- `422` — Missing required fields
-- `500` — Credential group not found
+**Error responses:** See [Error Codes](#error-codes) below.
 
 ---
 
@@ -116,6 +112,63 @@ Verify a TLSNotary proof and return a signed attestation.
 ```
 
 **Response:** Same format as `/verify/oauth`.
+
+**Error responses:** See [Error Codes](#error-codes) below.
+
+---
+
+## Error Codes
+
+All error responses return JSON in this format:
+
+```json
+{
+  "success": false,
+  "errors": ["ERROR_CODE"],
+  "message": "human-readable description"
+}
+```
+
+- `success` — always `false` for errors
+- `errors` — array of error code strings
+- `message` — human-readable description of what went wrong
+
+### Shared errors (both endpoints)
+
+These errors can occur on both `/verify` and `/verify/oauth` since they share the response-building step.
+
+| HTTP | Error Code | Cause |
+|------|------------|-------|
+| 400 | `INVALID_REGISTRY_ADDRESS` | `registry` is not a valid Ethereum address |
+| 400 | `INVALID_CHAIN_ID` | `chain_id` is not a valid integer |
+| 400 | `UNSUPPORTED_CHAIN_ID` | `chain_id` is not `8453` (Base Mainnet) or `84532` (Base Sepolia) |
+| 400 | `INVALID_APP_ID` | `app_id` is not a valid uint256 |
+| 400 | `INVALID_CREDENTIAL_GROUP_ID` | `credential_group_id` is not a valid uint256 |
+| 400 | `INVALID_SEMAPHORE_COMMITMENT` | `semaphore_identity_commitment` is not a valid uint256 |
+| 500 | `SIGNING_FAILED` | Internal error during ECDSA message signing |
+
+### POST /verify errors
+
+| HTTP | Error Code | Cause |
+|------|------------|-------|
+| 400 | `PRESENTATION_DECODE_FAILED` | `tlsn_presentation` is not valid hex |
+| 400 | `PRESENTATION_DESERIALIZE_FAILED` | Decoded bytes are not a valid bincode-serialized TLSNotary Presentation |
+| 400 | `PROOF_VERIFICATION_FAILED` | TLSNotary proof verification failed (invalid notary key, wrong server name, check failure, etc.) |
+
+### POST /verify/oauth errors
+
+| HTTP | Error Code | Cause |
+|------|------------|-------|
+| 400 | `SIGNATURE_PARSE_FAILED` | `signature` is not a valid ECDSA signature |
+| 400 | `ADDRESS_RECOVERY_FAILED` | Could not recover signer address from the signature |
+| 401 | `WRONG_OAUTH_SIGNER` | Recovered signer does not match the trusted OAuth signer (production only; skipped in dev mode) |
+| 400 | `CREDENTIAL_ID_FAILED` | Failed to compute credential ID from user ID |
+| 500 | `VERIFICATION_NOT_FOUND` | No verification config found for the given `credential_group_id` |
+| 400 | `VERIFICATION_CHECK_FAILED` | Domain or score does not meet the credential group requirements |
+
+### Note on missing fields
+
+If a required field is missing from the request body, Axum returns a `422 Unprocessable Entity` with a framework-generated message before any application error code is reached.
 
 ---
 
