@@ -38,7 +38,7 @@ Verify an OAuth credential and return a signed attestation.
   },
   "signature": "string (hex-encoded ECDSA signature over keccak256 of ABI-encoded message)",
   "registry": "string (Ethereum address, e.g. 0xbF9b2556e6Dd64D60E08E3669CeF2a4293e006db)",
-  "chain_id": "string (8453 for Base Mainnet, 84532 for Base Sepolia)",
+  "chain_id": "number (8453 for Base Mainnet, 84532 for Base Sepolia)",
   "credential_group_id": "string (see available groups below)",
   "app_id": "string (uint256, the app ID on the CredentialRegistry contract)",
   "semaphore_identity_commitment": "string (uint256)"
@@ -55,7 +55,7 @@ Verify an OAuth credential and return a signed attestation.
 | `message.timestamp` | string | Timestamp (uint256 as string) |
 | `signature` | string | ECDSA signature over `keccak256(abi.encode(domain, userId, score, timestamp))`. In dev mode, signer validation is skipped |
 | `registry` | string | CredentialRegistry contract address |
-| `chain_id` | string | Target chain ID. Must be `"8453"` (Base Mainnet) or `"84532"` (Base Sepolia) |
+| `chain_id` | number | Target chain ID. Must be `8453` (Base Mainnet) or `84532` (Base Sepolia) |
 | `credential_group_id` | string | ID of the credential group to verify against |
 | `app_id` | string | Application ID on the CredentialRegistry contract (uint256 as string) |
 | `semaphore_identity_commitment` | string | Semaphore identity commitment (uint256 as string) |
@@ -104,7 +104,7 @@ Verify a TLSNotary proof and return a signed attestation.
 {
   "tlsn_presentation": "string (hex-encoded bincode-serialized TLSNotary Presentation)",
   "registry": "string (Ethereum address)",
-  "chain_id": "string (8453 or 84532)",
+  "chain_id": "number (8453 or 84532)",
   "credential_group_id": "string",
   "app_id": "string (uint256)",
   "semaphore_identity_commitment": "string (uint256)"
@@ -140,7 +140,6 @@ These errors can occur on both `/verify` and `/verify/oauth` since they share th
 | HTTP | Error Code | Cause |
 |------|------------|-------|
 | 400 | `INVALID_REGISTRY_ADDRESS` | `registry` is not a valid Ethereum address |
-| 400 | `INVALID_CHAIN_ID` | `chain_id` is not a valid integer |
 | 400 | `UNSUPPORTED_CHAIN_ID` | `chain_id` is not `8453` (Base Mainnet) or `84532` (Base Sepolia) |
 | 400 | `INVALID_APP_ID` | `app_id` is not a valid uint256 |
 | 400 | `INVALID_CREDENTIAL_GROUP_ID` | `credential_group_id` is not a valid uint256 |
@@ -211,4 +210,4 @@ The `verifier_hash` is `keccak256(abi.encode(attestation))` and the `signature` 
 - In dev mode, the `signature` field in the OAuth request is still required and must be a valid ECDSA signature format, but the recovered signer address is **not** validated against the trusted signer.
 - The `message` fields (`domain`, `userId`, `score`, `timestamp`) in the OAuth request use Solidity ABI encoding internally. The `signature` should be over `keccak256(abi.encode(domain, userId, score, timestamp))` using `abi.encode` for the packed Solidity types `(string, string, uint256, uint256)`.
 - All uint256 values in the request are passed as **strings**.
-- The `chain_id` must be `"8453"` or `"84532"` — any other value returns 400.
+- The `chain_id` must be `8453` or `84532` — any other value returns 400.

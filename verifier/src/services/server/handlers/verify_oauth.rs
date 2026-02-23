@@ -3,6 +3,7 @@ use alloy::signers::Signature;
 use alloy::{sol};
 use alloy::primitives::{aliases::U256, keccak256, B256};
 use alloy::sol_types::SolValue;
+use axum::extract::rejection::JsonRejection;
 use axum::Json;
 use serde::{Serialize, Deserialize};
 use tracing::{info, error, instrument, trace};
@@ -28,7 +29,14 @@ pub struct VerifyRequest {
     credential_group_id: String,
     app_id: String,
     registry: String,
-    chain_id: String,
+    chain_id: u64,
+}
+
+pub async fn handle(
+    payload: Result<Json<VerifyRequest>, JsonRejection>,
+) -> Result<Json<VerifyResponse>, ApiError> {
+    let Json(payload) = payload.map_err(ApiError::from)?;
+    handle_inner(payload).await
 }
 
 #[instrument(
@@ -39,8 +47,8 @@ pub struct VerifyRequest {
         user = %payload.message.user_id
     )
 )]
-pub async fn handle(
-    Json(payload): Json<VerifyRequest>,
+async fn handle_inner(
+    payload: VerifyRequest,
 ) -> Result<Json<VerifyResponse>, ApiError> {
     info!("verification started");
     trace!("{:?}", &payload);

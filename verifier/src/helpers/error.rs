@@ -1,3 +1,4 @@
+use axum::extract::rejection::JsonRejection;
 use axum::http::StatusCode;
 use axum::response::{IntoResponse, Response};
 use axum::Json;
@@ -30,14 +31,20 @@ pub enum ErrorCode {
     VerificationCheckFailed,
     #[serde(rename = "INVALID_REGISTRY_ADDRESS")]
     InvalidRegistryAddress,
-    #[serde(rename = "INVALID_CHAIN_ID")]
-    InvalidChainId,
     #[serde(rename = "UNSUPPORTED_CHAIN_ID")]
     UnsupportedChainId,
     #[serde(rename = "INVALID_CREDENTIAL_GROUP_ID")]
     InvalidCredentialGroupId,
     #[serde(rename = "SIGNING_FAILED")]
     SigningFailed,
+    #[serde(rename = "INVALID_REQUEST_BODY")]
+    InvalidRequestBody,
+}
+
+impl From<JsonRejection> for ApiError {
+    fn from(rejection: JsonRejection) -> Self {
+        ApiError::bad_request(ErrorCode::InvalidRequestBody, rejection)
+    }
 }
 
 #[derive(Debug, Serialize)]
