@@ -3,12 +3,11 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use alloy::{hex, sol};
 use alloy::primitives::{keccak256, B256, U256};
 use alloy::sol_types::SolValue;
-use alloy::transports::http::reqwest::StatusCode;
 use alloy::signers::Signer;
 use axum::Json;
 use serde::Serialize;
 use tracing::{error, info};
-use crate::helpers::registry_from_string;
+use crate::helpers::{registry_from_string, is_registry_whitelisted, ApiError, ErrorCode};
 use crate::signer;
 
 fn serialize_u256_as_string<S>(value: &U256, serializer: S) -> Result<S::Ok, S::Error>
@@ -30,6 +29,9 @@ sol! {
     #[derive(Serialize)]
     struct Attestation {
         address registry;
+        #[serde(rename = "chain_id")]
+        #[serde(serialize_with = "serialize_u256_as_number")]
+        uint256 chainId;
         #[serde(rename = "credential_group_id")]
         #[serde(serialize_with = "serialize_u256_as_string")]
         uint256 credentialGroupId;
@@ -54,21 +56,37 @@ pub struct VerifyResponse {
     signature: String,
 }
 
+const VALID_CHAIN_IDS: &[u64] = &[8453, 84532];
+
 pub async fn verifier_response(
     registry_address: String,
+    chain_id: u64,
     credential_group_id: String,
     app_id: String,
     semaphore_identity_commitment: U256,
     credential_id: B256,
-) -> Result<Json<VerifyResponse>, (StatusCode, String)> {
+) -> Result<Json<VerifyResponse>, ApiError> {
     let registry = registry_from_string(registry_address)
         .map_err(|e| {
-            (StatusCode::BAD_REQUEST, e.to_string())
+            ApiError::bad_request(ErrorCode::InvalidRegistryAddress, e)
         })?;
+
+    if !is_registry_whitelisted(&registry) {
+        error!("registry address not whitelisted: {registry}");
+        return Err(ApiError::bad_request(
+            ErrorCode::RegistryNotWhitelisted,
+            format!("registry address not whitelisted: {registry}"),
+        ));
+    }
+
+    if !VALID_CHAIN_IDS.contains(&chain_id) {
+        error!("unsupported chain_id: {chain_id}");
+        return Err(ApiError::bad_request(ErrorCode::UnsupportedChainId, format!("unsupported chain_id: {chain_id}")));
+    }
 
     let app_id = U256::from_str(app_id.as_str()).map_err(|e| {
         error!("invalid app_id: {e}");
-        (StatusCode::BAD_REQUEST, e.to_string())
+        ApiError::bad_request(ErrorCode::InvalidAppId, e)
     })?;
 
     let issued_at = U256::from(
@@ -80,7 +98,8 @@ pub async fn verifier_response(
 
     let attestation = Attestation {
         registry,
-        credentialGroupId: U256::from_str(credential_group_id.as_str()).map_err(|e| {(StatusCode::BAD_REQUEST, e.to_string())})?,
+        chainId: U256::from(chain_id),
+        credentialGroupId: U256::from_str(credential_group_id.as_str()).map_err(|e| ApiError::bad_request(ErrorCode::InvalidCredentialGroupId, e))?,
         credentialId: credential_id,
         appId: app_id,
         semaphoreIdentityCommitment: semaphore_identity_commitment,
@@ -91,7 +110,7 @@ pub async fn verifier_response(
         .await
         .map_err(|e| {
             error!("unexpected error during message signing: {}", e);
-            (StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+            ApiError::internal(ErrorCode::SigningFailed, e)
         })?;
 
     info!("verification completed");

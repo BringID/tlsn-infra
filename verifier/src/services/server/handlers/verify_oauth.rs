@@ -3,10 +3,11 @@ use alloy::signers::Signature;
 use alloy::{sol};
 use alloy::primitives::{aliases::U256, keccak256, B256};
 use alloy::sol_types::SolValue;
-use axum::{Json, http::StatusCode};
+use axum::extract::rejection::JsonRejection;
+use axum::Json;
 use serde::{Serialize, Deserialize};
 use tracing::{info, error, instrument, trace};
-use crate::helpers::{random_credential_id, credential_id_from_bytes, verifier_response, VerifyResponse, OAUTH_SIGNER};
+use crate::helpers::{random_credential_id, credential_id_from_bytes, verifier_response, VerifyResponse, ApiError, ErrorCode, OAUTH_SIGNER};
 use crate::services::{OAuthVerificationManager};
 
 sol! {
@@ -28,6 +29,14 @@ pub struct VerifyRequest {
     credential_group_id: String,
     app_id: String,
     registry: String,
+    chain_id: u64,
+}
+
+pub async fn handle(
+    payload: Result<Json<VerifyRequest>, JsonRejection>,
+) -> Result<Json<VerifyResponse>, ApiError> {
+    let Json(payload) = payload.map_err(ApiError::from)?;
+    handle_inner(payload).await
 }
 
 #[instrument(
@@ -38,9 +47,9 @@ pub struct VerifyRequest {
         user = %payload.message.user_id
     )
 )]
-pub async fn handle(
-    Json(payload): Json<VerifyRequest>,
-) -> Result<Json<VerifyResponse>, (StatusCode, String)> {
+async fn handle_inner(
+    payload: VerifyRequest,
+) -> Result<Json<VerifyResponse>, ApiError> {
     info!("verification started");
     trace!("{:?}", &payload);
 
@@ -50,19 +59,19 @@ pub async fn handle(
     let signature = payload.signature.parse::<Signature>()
         .map_err(|e| {
             error!("failed to parse signature: {}", e);
-            (StatusCode::BAD_REQUEST, e.to_string())
+            ApiError::bad_request(ErrorCode::SignatureParseFailed, e)
         })?;
 
     // Recover signer address
     let recovered_address = signature.recover_address_from_msg(message.as_slice())
         .map_err(|e| {
             error!("failed to recover address: {}", e);
-            (StatusCode::BAD_REQUEST, e.to_string())
+            ApiError::bad_request(ErrorCode::AddressRecoveryFailed, e)
         })?;
 
     let app_id_u256 = U256::from_str(payload.app_id.as_str()).map_err(|e| {
         error!("invalid app_id: {e}");
-        (StatusCode::BAD_REQUEST, e.to_string())
+        ApiError::bad_request(ErrorCode::InvalidAppId, e)
     })?;
 
     let credential_id: B256 = match std::env::var("ENV") {
@@ -71,14 +80,14 @@ pub async fn handle(
         }
         _ => {
             if recovered_address != *OAUTH_SIGNER {
-                return Err((StatusCode::UNAUTHORIZED, "Wrong OAuth signer".to_string()));
+                return Err(ApiError::unauthorized(ErrorCode::WrongOauthSigner, "Wrong OAuth signer"));
             }
             credential_id_from_bytes(
                 payload.message.user_id.as_bytes(),
                 &app_id_u256,
             ).map_err(|e| {
                 error!("credential ID computation failed: {e}");
-                (StatusCode::BAD_REQUEST, e.to_string())
+                ApiError::bad_request(ErrorCode::CredentialIdFailed, e)
             })?
         }
     };
@@ -86,7 +95,7 @@ pub async fn handle(
     let verification = OAuthVerificationManager::get(&payload.credential_group_id)
         .ok_or_else(|| {
             error!("verification is not found");
-            (StatusCode::INTERNAL_SERVER_ERROR, "verification is not found".to_string())
+            ApiError::internal(ErrorCode::VerificationNotFound, "verification is not found")
         })?
         .clone();
 
@@ -94,7 +103,7 @@ pub async fn handle(
         payload.message.domain,
         payload.message.score.to::<i32>()
     ).await.map_err(
-        |e| { (StatusCode::BAD_REQUEST, e.to_string()) }
+        |e| { ApiError::bad_request(ErrorCode::VerificationCheckFailed, e) }
     )?;
 
     // Build Verifier message
@@ -102,11 +111,12 @@ pub async fn handle(
         payload.semaphore_identity_commitment.as_str()
     ).map_err(|e| {
         error!("invalid Semaphore Identity commitment: {e}");
-        (StatusCode::BAD_REQUEST, e.to_string())
+        ApiError::bad_request(ErrorCode::InvalidSemaphoreCommitment, e)
     })?;
 
     verifier_response(
         payload.registry,
+        payload.chain_id,
         payload.credential_group_id,
         payload.app_id,
         semaphore_identity_commitment,
