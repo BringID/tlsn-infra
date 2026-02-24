@@ -140,6 +140,7 @@ These errors can occur on both `/verify` and `/verify/oauth` since they share th
 | HTTP | Error Code | Cause |
 |------|------------|-------|
 | 400 | `INVALID_REGISTRY_ADDRESS` | `registry` is not a valid Ethereum address |
+| 400 | `REGISTRY_NOT_WHITELISTED` | `registry` is not in the allowed whitelist |
 | 400 | `UNSUPPORTED_CHAIN_ID` | `chain_id` is not `8453` (Base Mainnet) or `84532` (Base Sepolia) |
 | 400 | `INVALID_APP_ID` | `app_id` is not a valid uint256 |
 | 400 | `INVALID_CREDENTIAL_GROUP_ID` | `credential_group_id` is not a valid uint256 |

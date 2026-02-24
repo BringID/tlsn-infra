@@ -7,7 +7,7 @@ use alloy::signers::Signer;
 use axum::Json;
 use serde::Serialize;
 use tracing::{error, info};
-use crate::helpers::{registry_from_string, ApiError, ErrorCode};
+use crate::helpers::{registry_from_string, is_registry_whitelisted, ApiError, ErrorCode};
 use crate::signer;
 
 fn serialize_u256_as_string<S>(value: &U256, serializer: S) -> Result<S::Ok, S::Error>
@@ -70,6 +70,14 @@ pub async fn verifier_response(
         .map_err(|e| {
             ApiError::bad_request(ErrorCode::InvalidRegistryAddress, e)
         })?;
+
+    if !is_registry_whitelisted(&registry) {
+        error!("registry address not whitelisted: {registry}");
+        return Err(ApiError::bad_request(
+            ErrorCode::RegistryNotWhitelisted,
+            format!("registry address not whitelisted: {registry}"),
+        ));
+    }
 
     if !VALID_CHAIN_IDS.contains(&chain_id) {
         error!("unsupported chain_id: {chain_id}");
