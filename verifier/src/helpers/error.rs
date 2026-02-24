@@ -31,6 +31,8 @@ pub enum ErrorCode {
     VerificationCheckFailed,
     #[serde(rename = "INVALID_REGISTRY_ADDRESS")]
     InvalidRegistryAddress,
+    #[serde(rename = "REGISTRY_NOT_WHITELISTED")]
+    RegistryNotWhitelisted,
     #[serde(rename = "UNSUPPORTED_CHAIN_ID")]
     UnsupportedChainId,
     #[serde(rename = "INVALID_CREDENTIAL_GROUP_ID")]
