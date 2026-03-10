@@ -74,27 +74,31 @@ async fn handle_inner(
         ApiError::bad_request(ErrorCode::InvalidAppId, e)
     })?;
 
-    let credential_id: B256 = match std::env::var("ENV") {
-        Ok(ref value) if value == "dev" => {
-            random_credential_id()
+    // Production: always validate signer + deterministic credential_id
+    // Dev/staging: controlled by STAGING_VALIDATE_OAUTH_SIGNER and STAGING_USE_RANDOM_ID
+    let is_dev = matches!(std::env::var("ENV"), Ok(ref v) if v == "dev");
+
+    if !is_dev || std::env::var("STAGING_VALIDATE_OAUTH_SIGNER").is_ok_and(|v| v == "true") {
+        let expected_signer = get_oauth_signer(&payload.credential_group_id)
+            .ok_or_else(|| {
+                error!("no OAuth signer configured for credential_group_id {}", payload.credential_group_id);
+                ApiError::unauthorized(ErrorCode::WrongOauthSigner, "No OAuth signer configured for this credential group")
+            })?;
+        if recovered_address != *expected_signer {
+            return Err(ApiError::unauthorized(ErrorCode::WrongOauthSigner, "Wrong OAuth signer"));
         }
-        _ => {
-            let expected_signer = get_oauth_signer(&payload.credential_group_id)
-                .ok_or_else(|| {
-                    error!("no OAuth signer configured for credential_group_id {}", payload.credential_group_id);
-                    ApiError::unauthorized(ErrorCode::WrongOauthSigner, "No OAuth signer configured for this credential group")
-                })?;
-            if recovered_address != *expected_signer {
-                return Err(ApiError::unauthorized(ErrorCode::WrongOauthSigner, "Wrong OAuth signer"));
-            }
-            credential_id_from_bytes(
-                payload.message.user_id.as_bytes(),
-                &app_id_u256,
-            ).map_err(|e| {
-                error!("credential ID computation failed: {e}");
-                ApiError::bad_request(ErrorCode::CredentialIdFailed, e)
-            })?
-        }
+    }
+
+    let credential_id: B256 = if is_dev && std::env::var("STAGING_USE_RANDOM_ID").is_ok_and(|v| v == "true") {
+        random_credential_id()
+    } else {
+        credential_id_from_bytes(
+            payload.message.user_id.as_bytes(),
+            &app_id_u256,
+        ).map_err(|e| {
+            error!("credential ID computation failed: {e}");
+            ApiError::bad_request(ErrorCode::CredentialIdFailed, e)
+        })?
     };
 
     let verification = OAuthVerificationManager::get(&payload.credential_group_id)
