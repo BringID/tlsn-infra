@@ -12,4 +12,4 @@ pub use registry::registry_from_string;
 pub use registry::is_registry_whitelisted;
 pub use verifier_response::verifier_response;
 pub use verifier_response::VerifyResponse;
-pub use oauth_signer::OAUTH_SIGNER;
+pub use oauth_signer::get_oauth_signer;
