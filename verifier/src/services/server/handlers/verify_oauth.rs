@@ -78,7 +78,7 @@ async fn handle_inner(
     // Dev/staging: controlled by STAGING_VALIDATE_OAUTH_SIGNER and STAGING_USE_RANDOM_ID
     let is_dev = matches!(std::env::var("ENV"), Ok(ref v) if v == "dev");
 
-    if !is_dev || std::env::var("STAGING_VALIDATE_OAUTH_SIGNER").ok().as_deref() == Some("true") {
+    if !is_dev || std::env::var("STAGING_VALIDATE_OAUTH_SIGNER").is_ok_and(|v| v == "true") {
         let expected_signer = get_oauth_signer(&payload.credential_group_id)
             .ok_or_else(|| {
                 error!("no OAuth signer configured for credential_group_id {}", payload.credential_group_id);
@@ -89,7 +89,7 @@ async fn handle_inner(
         }
     }
 
-    let credential_id: B256 = if is_dev && std::env::var("STAGING_USE_RANDOM_ID").ok().as_deref() == Some("true") {
+    let credential_id: B256 = if is_dev && std::env::var("STAGING_USE_RANDOM_ID").is_ok_and(|v| v == "true") {
         random_credential_id()
     } else {
         credential_id_from_bytes(
