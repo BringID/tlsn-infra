@@ -7,7 +7,7 @@ use axum::extract::rejection::JsonRejection;
 use axum::Json;
 use serde::{Serialize, Deserialize};
 use tracing::{info, error, instrument, trace};
-use crate::helpers::{random_credential_id, credential_id_from_bytes, verifier_response, VerifyResponse, ApiError, ErrorCode, OAUTH_SIGNER};
+use crate::helpers::{random_credential_id, credential_id_from_bytes, verifier_response, VerifyResponse, ApiError, ErrorCode, get_oauth_signer};
 use crate::services::{OAuthVerificationManager};
 
 sol! {
@@ -79,7 +79,12 @@ async fn handle_inner(
             random_credential_id()
         }
         _ => {
-            if recovered_address != *OAUTH_SIGNER {
+            let expected_signer = get_oauth_signer(&payload.credential_group_id)
+                .ok_or_else(|| {
+                    error!("no OAuth signer configured for credential_group_id {}", payload.credential_group_id);
+                    ApiError::unauthorized(ErrorCode::WrongOauthSigner, "No OAuth signer configured for this credential group")
+                })?;
+            if recovered_address != *expected_signer {
                 return Err(ApiError::unauthorized(ErrorCode::WrongOauthSigner, "Wrong OAuth signer"));
             }
             credential_id_from_bytes(
